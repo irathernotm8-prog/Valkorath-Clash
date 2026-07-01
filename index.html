@@ -102,7 +102,7 @@
     font-family:'Cinzel',serif;
   }
   .art-box{
-    width:100%; height:120px; border-radius:6px; margin-bottom:7px;
+    width:100%; aspect-ratio:2/3; border-radius:6px; margin-bottom:7px;
     background: repeating-linear-gradient(135deg, rgba(43,29,18,.06) 0 8px, rgba(43,29,18,.02) 8px 16px);
     border:1px solid rgba(43,29,18,.2);
     display:flex; align-items:center; justify-content:center; overflow:hidden;
@@ -513,6 +513,124 @@ const ROSTER = [
   { id:"malchros", name:"Malchros (Possessed Armor)", faction:"neutral", hp:30, art:"assets/malchros.jpg", moves:[
     {name:"Possessed Onslaught", dice:{n:1,d:10,bonus:4}, desc:"Animated armor driven by dark will."},
     {name:"Hollow Resilience", dice:{n:1,d:6,bonus:3}, desc:"Empty armor absorbs the blow."},
+  ]},
+
+  /* ---------- NEWLY DISCOVERED (from the Valkorath art book) ---------- */
+  { id:"kazuro", name:"Kazuro", faction:"light", hp:26, art:"assets/kazuro.jpg", moves:[
+    {name:"Frostbound Strike", dice:{n:1,d:8,bonus:3}, desc:"A legendary swordmaster's honed technique."},
+    {name:"Elder's Discipline", heal:{n:1,d:6,bonus:3}, desc:"Draws on generations of inner discipline."},
+  ]},
+  { id:"ryujin", name:"Ryujin", faction:"light", hp:24, art:"assets/ryujin.jpg", moves:[
+    {name:"Frost Shadow Strike", dice:{n:1,d:8,bonus:4}, desc:"Silent, ghost-like, and lethal."},
+    {name:"Gatekeeper's Trial", dice:{n:1,d:6,bonus:3}, desc:"Tests all who seek the tribe's aid."},
+  ]},
+  { id:"kaedros", name:"Kaedros", faction:"light", hp:25, art:"assets/kaedros.jpg", moves:[
+    {name:"Silent Blade", dice:{n:1,d:8,bonus:4}, desc:"Flawless technique, forged in silence."},
+    {name:"Final Crucible", dice:{n:2,d:6,bonus:2}, desc:"Spirit leads the blade."},
+  ]},
+  { id:"kurogai", name:"Kurogai (The Oni Samurai)", faction:"darkness", hp:29, art:"assets/kurogai.jpg", moves:[
+    {name:"Cursed Katana", dice:{n:1,d:10,bonus:4}, desc:"A blade that exudes malevolence."},
+    {name:"Oni's Hunger", dice:{n:2,d:6,bonus:3}, desc:"A dark pact's twisted power."},
+  ]},
+  { id:"unknown", name:"The Unknown", faction:"neutral", hp:40, art:"assets/unknown.jpg", moves:[
+    {name:"Echo of Time", dice:{n:1,d:10,bonus:5}, desc:"A presence outside the known laws of Valkorath."},
+    {name:"Remembered", dice:{n:2,d:8,bonus:3}, desc:"The air chills; fate holds its breath."},
+  ]},
+  { id:"lumbar", name:"Lumbar", faction:"light", hp:32, art:"assets/lumbar.jpg", moves:[
+    {name:"Grovekeeper's Wrath", dice:{n:1,d:8,bonus:4}, desc:"Calls trees to move and stones to rise."},
+    {name:"Wilds United", dice:{n:2,d:6,bonus:3}, desc:"Allies with Khaelor to repel corruption.", requires:"khaelor"},
+  ]},
+  { id:"tellan", name:"Tellan", faction:"light", hp:26, art:"assets/tellan.jpg", moves:[
+    {name:"Flame-Willed Strike", dice:{n:1,d:8,bonus:4}, desc:"Impulsive, savage battle skill."},
+    {name:"Resistance United", dice:{n:2,d:6,bonus:3}, desc:"Fights within Fredric's alliance.", requires:"fredric"},
+  ]},
+  { id:"calador", name:"Calador", faction:"neutral", hp:30, art:"assets/calador.jpg", moves:[
+    {name:"Rune-Marked Axe", dice:{n:1,d:10,bonus:4}, desc:"A living legend's earned-respect strike."},
+    {name:"Chieftain's Resolve", dice:{n:1,d:6,bonus:4}, desc:"Survived storm, war, and famine."},
+  ]},
+  { id:"bjorn", name:"Bjorn (The Robot Viking)", faction:"neutral", hp:32, art:"assets/bjorn.jpg", moves:[
+    {name:"War-Axe Fusion", dice:{n:1,d:10,bonus:4}, desc:"War-axes fused to his forearms."},
+    {name:"Brothers in Arms", dice:{n:2,d:6,bonus:3}, desc:"Fights loyal to Lordran.", requires:"lordran"},
+  ]},
+  { id:"lordran", name:"Lordran", faction:"neutral", hp:29, art:"assets/lordran.jpg", moves:[
+    {name:"Shieldbearer's Strike", dice:{n:1,d:8,bonus:3}, desc:"An unshakable sense of duty."},
+    {name:"Peacemaker's Guard", dice:{n:1,d:6,bonus:3}, desc:"Carries burdens others cast aside."},
+  ]},
+  { id:"clay", name:"Clay (The Deceiver)", faction:"neutral", hp:22, art:"assets/clay.jpg", moves:[
+    {name:"Illusion Strike", dice:{n:1,d:8,bonus:3}, desc:"Crafts schemes with a smith's precision."},
+    {name:"Deceiver's Gambit", dice:{n:1,d:6,bonus:4}, desc:"The world is a chessboard."},
+  ]},
+  { id:"primordialevil", name:"Primordial Evil", faction:"darkness", hp:40, art:"assets/primordialevil.jpg", moves:[
+    {name:"Original Sin", dice:{n:1,d:10,bonus:5}, desc:"The first fall to temptation, twisted into form."},
+    {name:"Twisted Overgrowth", dice:{n:2,d:8,bonus:3}, desc:"An immense, dormant evil awakens."},
+  ]},
+  { id:"darkreign", name:"Dark Reign (The Reflection)", faction:"challenge", hp:30, art:"assets/darkreign.jpg", moves:[
+    {name:"Reflected Fear", dice:{n:1,d:8,bonus:4}, desc:"Embodies every doubt its opponent carries."},
+    {name:"Shifting Doubt", dice:{n:2,d:6,bonus:3}, desc:"Changes shape mid-battle."},
+  ]},
+  { id:"cytax", name:"Cytax", faction:"darkness", hp:27, art:"assets/cytax.jpg", moves:[
+    {name:"Feral Onslaught", dice:{n:1,d:10,bonus:4}, desc:"A living weapon of unrelenting hunger."},
+    {name:"Void-Warped Essence", dice:{n:2,d:6,bonus:3}, desc:"Malakar's first twisted experiment.", requires:"malakar"},
+  ]},
+  { id:"calypso", name:"Calypso", faction:"challenge", hp:29, art:"assets/calypso.jpg", moves:[
+    {name:"Elemental Command", dice:{n:1,d:8,bonus:4}, desc:"A warrior-queen's command of the storm."},
+    {name:"Sovereign's Sorrow", dice:{n:2,d:6,bonus:3}, desc:"Fights to redeem her bloodline."},
+  ]},
+  { id:"garrux", name:"Garrux (The Warbound King)", faction:"challenge", hp:34, art:"assets/garrux.jpg", moves:[
+    {name:"Conqueror's Grip", dice:{n:1,d:10,bonus:4}, desc:"Shattered kingdoms with his bare hands."},
+    {name:"Gatekeeper's Judgment", dice:{n:2,d:6,bonus:3}, desc:"Bound by a pact with Death.", requires:"reiner"},
+  ]},
+  { id:"tiapold", name:"Tiapold (The Dark Enforcer)", faction:"challenge", hp:26, art:"assets/tiapold.jpg", moves:[
+    {name:"War-Mage's Illusion", dice:{n:1,d:8,bonus:4}, desc:"Mastery of illusion bordering on divine."},
+    {name:"Veil of Truth", dice:{n:2,d:6,bonus:3}, desc:"Serves Garrux's judgment.", requires:"garrux"},
+  ]},
+  { id:"reiner", name:"Reiner (The Dark Herald)", faction:"challenge", hp:30, art:"assets/reiner.jpg", moves:[
+    {name:"Runed Spear Thrust", dice:{n:1,d:10,bonus:4}, desc:"Pierces both armor and enchantment."},
+    {name:"Silent Endurance", dice:{n:1,d:6,bonus:4}, desc:"Bound to the Runes of Obedience."},
+  ]},
+  { id:"valeriusi", name:"Valerius the First", faction:"challenge", hp:30, art:"assets/valeriusi.jpg", moves:[
+    {name:"Blood Pact's Truth", dice:{n:1,d:8,bonus:4}, desc:"The bedrock upon which Valkorath was built."},
+    {name:"Guardian's Legacy", dice:{n:2,d:6,bonus:3}, desc:"Passes his power to the worthy."},
+  ]},
+  { id:"andromedus", name:"Andromedus", faction:"challenge", hp:28, art:"assets/andromedus.jpg", moves:[
+    {name:"Dream-Trial Blade", dice:{n:1,d:8,bonus:4}, desc:"Leads challengers through trials of self."},
+    {name:"Test of the Soul", dice:{n:2,d:6,bonus:3}, desc:"Only the just can withstand this test."},
+  ]},
+  { id:"valeriusii", name:"King Valerius II", faction:"challenge", hp:30, art:"assets/valeriusii.jpg", moves:[
+    {name:"Unifying Strike", dice:{n:1,d:8,bonus:4}, desc:"A monarch of vision and unmatched martial skill."},
+    {name:"Brotherhood's Strength", dice:{n:2,d:6,bonus:3}, desc:"Fights alongside Kilian.", requires:"kilian"},
+  ]},
+  { id:"kilian", name:"Kilian", faction:"challenge", hp:26, art:"assets/kilian.jpg", moves:[
+    {name:"Silver Lightning", dice:{n:1,d:8,bonus:4}, desc:"A blade that strikes like silver lightning."},
+    {name:"Unwavering Loyalty", dice:{n:2,d:6,bonus:3}, desc:"Sworn shadow to Valerius II.", requires:"valeriusii"},
+  ]},
+  { id:"helios", name:"Helios (The Beast King)", faction:"challenge", hp:33, art:"assets/helios.jpg", moves:[
+    {name:"Behemoth's Fury", dice:{n:1,d:10,bonus:4}, desc:"Sinew and fury from a pact with Malakar."},
+    {name:"Scorched Soul Rage", dice:{n:2,d:6,bonus:3}, desc:"A mind clouded, a soul scorched."},
+  ]},
+  { id:"vector", name:"Vector (The First Prince)", faction:"darkness", hp:36, art:"assets/vector.jpg", moves:[
+    {name:"Void-Fused Strike", dice:{n:1,d:10,bonus:4}, desc:"Consumed by ambition, cast into the Void."},
+    {name:"Reclaimed Throne", dice:{n:2,d:8,bonus:3}, desc:"Reborn through Malakar's final sorcery.", requires:"malakar"},
+  ]},
+  { id:"fredwin", name:"Fredwin (The Bitter King)", faction:"challenge", hp:27, art:"assets/fredwin.jpg", moves:[
+    {name:"Tyrant's Sorrow", dice:{n:1,d:8,bonus:4}, desc:"A reign hardened by isolation and cruelty."},
+    {name:"Isolated Vengeance", dice:{n:2,d:6,bonus:3}, desc:"Seeks vengeance, blinded by loss."},
+  ]},
+  { id:"kleon", name:"Kleon (King Out of Time)", faction:"challenge", hp:29, art:"assets/kleon.jpg", moves:[
+    {name:"Sundial Blade", dice:{n:1,d:10,bonus:4}, desc:"Forged by bending time through runic crystal."},
+    {name:"Bend the Timestream", dice:{n:2,d:6,bonus:3}, desc:"Sees time as a sea of choices, not a line."},
+  ]},
+  { id:"lucan", name:"Lucan (The King That Never Was)", faction:"light", hp:28, art:"assets/lucan.jpg", moves:[
+    {name:"Prophecy Longspear", dice:{n:1,d:8,bonus:4}, desc:"A weapon inscribed with ancient prophecy."},
+    {name:"Chosen by the People", dice:{n:2,d:6,bonus:3}, desc:"Fights alongside Ouken.", requires:"ouken"},
+  ]},
+  { id:"ouken", name:"Ouken (The Fierce Protector)", faction:"light", hp:30, art:"assets/ouken.jpg", moves:[
+    {name:"Hellhound's Breath", dice:{n:1,d:8,bonus:4}, desc:"His breath burns, his howl paralyzes."},
+    {name:"Lucan's Shadow", dice:{n:2,d:6,bonus:3}, desc:"A tether to the fury in his blood.", requires:"lucan"},
+  ]},
+  { id:"gothar", name:"Gothar (The Timebound Tyrant)", faction:"darkness", hp:38, art:"assets/gothar.jpg", moves:[
+    {name:"Erased Timeline", dice:{n:1,d:10,bonus:4}, desc:"Consumes fixed points of fate."},
+    {name:"Entropy's Axe", dice:{n:2,d:8,bonus:4}, desc:"To fight him is to be unmade before you fall."},
   ]},
 ];
 
