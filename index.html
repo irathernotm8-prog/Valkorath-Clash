@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>VALKORATH: CLASH — Prototype v2</title>
+<title>VALKORATH: CLASH — Prototype v3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -46,7 +46,7 @@
   .sub{color:#c9bd9c; font-size:14px; margin-bottom:22px; max-width:700px; line-height:1.6;}
   .sub b{color:var(--gold-bright);}
 
-  .layout{display:grid; grid-template-columns:1fr 320px; gap:18px; align-items:start;}
+  .layout{display:grid; grid-template-columns:1fr 300px; gap:18px; align-items:start;}
   @media (max-width:920px){ .layout{grid-template-columns:1fr;} }
 
   .panel{
@@ -94,6 +94,7 @@
   .card.selected{box-shadow:0 0 0 2px var(--burgundy-bright), 0 0 16px -2px var(--burgundy-bright);}
   .card.targetable{box-shadow:0 0 0 2px var(--burgundy-bright), 0 0 16px -2px var(--burgundy-bright); cursor:crosshair;}
   .card.dead{opacity:.3; pointer-events:none; filter:grayscale(1);}
+  .card.usedup{opacity:.55;}
 
   .seal{
     width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;
@@ -115,32 +116,51 @@
   .hpwrap{background:#00000022; border-radius:5px; height:8px; overflow:hidden; margin-bottom:3px; border:1px solid rgba(43,29,18,.3);}
   .hpbar{height:100%; transition:width .3s;}
   .hptext{font-family:'Cinzel',serif; font-size:10px; color:var(--ink-dim);}
-  .bench-tag{
-    position:absolute; top:6px; left:6px; background:var(--forest); color:#eee;
-    font-family:'Cinzel',serif; font-size:8.5px; padding:2px 6px; border-radius:4px; letter-spacing:.08em;
-  }
-  .lock-tag{
-    position:absolute; bottom:6px; right:8px; font-size:13px; filter:drop-shadow(0 0 3px #000);
+  .cd-tag{
+    position:absolute; bottom:6px; right:8px; font-size:10px; font-family:'Cinzel',serif;
+    background:var(--burgundy); color:#f3e6c4; padding:1px 6px; border-radius:4px;
   }
 
   /* SIDEBAR */
   .sidebar{position:sticky; top:14px;}
   .side-title{font-family:'Cinzel',serif; font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-bright); margin-bottom:10px;}
-  .dice-readout{
-    background:#00000030; border:1px solid #47341d; border-radius:8px; padding:10px 12px; margin-bottom:12px;
-    font-family:'Cinzel',serif; font-size:12px; color:#d9c98f; min-height:20px;
+
+  /* dice visualization */
+  .roll-panel{
+    background:#00000035; border:1px solid #47341d; border-radius:8px; padding:10px 12px; margin-bottom:14px;
   }
+  .roll-panel .roll-label{font-family:'Cinzel',serif; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#a9946a; margin-bottom:6px;}
+  .dice-row{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .die-face{
+    width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(160deg,#f3e6c4,#cdae63); color:var(--ink); font-family:'Cinzel',serif;
+    font-weight:700; font-size:13px; box-shadow:0 2px 0 rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.3);
+    transform:rotate(-4deg);
+  }
+  .die-face.d20{background:linear-gradient(160deg,#e6c34a,#a8324a); color:#fff2d0; transform:rotate(3deg);}
+  .die-face.miss{background:linear-gradient(160deg,#8a7a63,#5a4a30); color:#e7d6a4;}
+  .roll-plus{color:#a9946a; font-family:'Cinzel',serif; font-size:13px;}
+  .roll-eq{color:var(--gold-bright); font-family:'Cinzel',serif; font-size:15px; font-weight:700; margin-left:2px;}
+  .roll-tag{
+    display:inline-block; font-family:'Cinzel',serif; font-size:10.5px; padding:2px 8px; border-radius:5px;
+    margin-top:6px; letter-spacing:.05em;
+  }
+  .roll-tag.hit{background:var(--forest); color:#eef2ea;}
+  .roll-tag.crit{background:var(--gold); color:#241a0a;}
+  .roll-tag.miss{background:var(--burgundy); color:#f3e6c4;}
+
   .movebtn{
     display:block; width:100%; text-align:left; background:linear-gradient(180deg,#e9dcb6,#dcc98d);
     border:1.5px solid #8a6d2e; color:var(--ink); border-radius:8px;
     padding:9px 11px; margin-bottom:8px; cursor:pointer; font-family:'EB Garamond',serif;
   }
   .movebtn:hover:not(:disabled){border-color:var(--burgundy);}
-  .movebtn:disabled{opacity:.4; cursor:not-allowed; filter:grayscale(.4);}
-  .mv-top{display:flex; justify-content:space-between; font-weight:700; font-family:'Cinzel',serif; font-size:12px;}
-  .mv-dmg{color:var(--burgundy); font-family:'Cinzel',serif;}
-  .mv-desc{color:var(--ink-dim); font-size:12px; margin-top:3px; font-style:italic;}
-  .locked-tag{color:var(--burgundy); font-size:10.5px; font-family:'Cinzel',serif; margin-top:3px; display:block;}
+  .movebtn:disabled{opacity:.45; cursor:not-allowed; filter:grayscale(.4);}
+  .mv-top{display:flex; justify-content:space-between; align-items:baseline; font-weight:700; font-family:'Cinzel',serif; font-size:12.5px;}
+  .mv-dmg{color:var(--burgundy); font-family:'Cinzel',serif; font-size:12px;}
+  .mv-dmg .range{color:var(--ink-dim); font-weight:400; font-size:10.5px; margin-left:3px;}
+  .mv-cd{color:var(--burgundy); font-size:10px; font-family:'Cinzel',serif; margin-top:2px; display:block;}
+  .mv-lock{color:var(--burgundy); font-size:10px; font-family:'Cinzel',serif; margin-top:2px; display:block;}
 
   .tabbar{display:flex; gap:6px; margin-bottom:12px;}
   .tabbtn{
@@ -156,8 +176,30 @@
   }
   .item-card:hover{border-color:var(--gold-bright);}
   .item-card .it-nm{font-family:'Cinzel',serif; font-weight:700; font-size:12px; color:var(--violet);}
-  .item-card .it-desc{font-size:11.5px; font-style:italic; color:var(--ink-dim); margin-top:2px;}
   .item-card.disabled{opacity:.35; pointer-events:none;}
+
+  .bench-mini-title{font-family:'Cinzel',serif; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#a9946a; margin:14px 0 8px;}
+  .bench-mini-row{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .bench-mini{
+    background:#00000030; border:1px solid #47341d; border-radius:7px; padding:6px; text-align:center;
+  }
+  .bench-mini .bm-art{width:100%; aspect-ratio:2/3; border-radius:5px; overflow:hidden; margin-bottom:4px; background:#00000030;}
+  .bench-mini .bm-art img{width:100%; height:100%; object-fit:cover;}
+  .bench-mini .bm-nm{font-family:'Cinzel',serif; font-size:10px; color:#e7d6a4; line-height:1.2;}
+  .bench-mini .bm-hp{font-family:'Cinzel',serif; font-size:9px; color:#a9946a;}
+  .bench-mini.dead{opacity:.35; filter:grayscale(1);}
+
+  .details-box{
+    background:#00000030; border:1px solid #47341d; border-radius:10px; padding:14px 16px; margin-bottom:16px;
+  }
+  .details-box .d-title{font-family:'Cinzel',serif; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-bright); margin-bottom:10px;}
+  .d-entry{margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #33261650;}
+  .d-entry:last-child{margin-bottom:0; padding-bottom:0; border-bottom:none;}
+  .d-entry .d-nm{font-family:'Cinzel',serif; font-weight:700; font-size:13px; color:#e7d6a4; margin-bottom:3px;}
+  .d-entry .d-flavor{font-style:italic; color:#c9bd9c; font-size:13px; margin-bottom:4px; line-height:1.5;}
+  .d-entry .d-stats{font-family:'Cinzel',serif; font-size:11px; color:var(--gold-bright);}
+  .d-entry .d-lock{font-family:'Cinzel',serif; font-size:11px; color:var(--burgundy-bright); margin-top:3px;}
+  .d-hint{color:#8a7a63; font-style:italic; font-size:13px;}
 
   .btn{
     background:linear-gradient(180deg,var(--gold-bright),var(--gold)); color:#241a0a; border:1px solid #8a6d2e;
@@ -167,6 +209,7 @@
   .btn:hover{filter:brightness(1.07);}
   .btn.secondary{background:#00000030; color:#c9bd9c; border:1px solid #47341d;}
   .btn.wide{width:100%; margin-top:4px;}
+  .end-turn-wrap{margin-top:16px; padding-top:14px; border-top:1px solid #47341d;}
 
   .log{
     background:#00000035; border:1px solid #47341d; border-radius:10px;
@@ -176,6 +219,8 @@
   .log .hit{color:var(--burgundy-bright);}
   .log .heal{color:#8fbf7a;}
   .log .roll{color:#9fb0c9; font-style:italic;}
+  .log .miss{color:#8a7a63; font-style:italic;}
+  .log .crit{color:var(--gold-bright); font-weight:700;}
 
   .banner{
     text-align:center; padding:60px 24px; background:linear-gradient(180deg, var(--leather), var(--wood-2));
@@ -200,6 +245,7 @@
 
   ::-webkit-scrollbar{width:8px;}
   ::-webkit-scrollbar-thumb{background:#4a3820; border-radius:8px;}
+
 </style>
 </head>
 <body>
@@ -637,11 +683,15 @@ const ROSTER = [
 const ITEM_POOL = [
   { id:"heal", name:"Healing Draught", desc:"Restore 10 HP to one active character.", type:"target-own-alive" },
   { id:"reshuffle", name:"Reshuffle Satchel", desc:"Discard your remaining item cards, draw 3 new ones.", type:"self" },
-  { id:"swap", name:"Call Reinforcement", desc:"Move a living bench character into an empty mat slot.", type:"swap" },
-  { id:"secondwind", name:"Second Wind", desc:"Clear the cooldown on one of your character's moves.", type:"target-own-alive" },
+  { id:"swap", name:"Call Reinforcement", desc:"Move a living bench character into an empty (fallen) mat slot.", type:"swap" },
+  { id:"secondwind", name:"Second Wind", desc:"Clear the cooldowns on one of your character's moves.", type:"target-own-alive" },
   { id:"guard", name:"Shield Ward", desc:"Halve the next hit taken by one active character.", type:"target-own-alive" },
   { id:"overdraw", name:"Merchant's Favor", desc:"Draw 1 extra item card.", type:"self" },
+  { id:"rotate", name:"Tactical Rotation", desc:"Pull any active character off the field — wounded or not — and sub in a bench character.", type:"rotate" },
 ];
+
+const MISS_MAX = 4;   // d20 roll of 1-4 = miss
+const CRIT_MIN = 19;  // d20 roll of 19-20 = critical (double damage)
 
 let state = null;
 
@@ -656,7 +706,17 @@ function rollDice({n,d,bonus}){
   const total = rolls.reduce((a,b)=>a+b,0) + bonus;
   return { rolls, bonus, total, label:`${n}d${d}${bonus?("+"+bonus):""}` };
 }
-function freshCard(def){ return { ...def, curHp:def.hp, alive:true, lockedMoveIdx:null, shielded:false, bench:false }; }
+function rollD20(){ return 1+Math.floor(Math.random()*20); }
+function diceRange(spec){
+  if(!spec) return null;
+  const min = spec.n*1 + spec.bonus;
+  const max = spec.n*spec.d + spec.bonus;
+  const avg = Math.round((spec.n*(spec.d+1)/2) + spec.bonus);
+  return {min, max, avg};
+}
+function freshCard(def){
+  return { ...def, curHp:def.hp, alive:true, cooldowns:def.moves.map(()=>0), shielded:false, bench:false };
+}
 function buildItemDeck(){
   const deck=[];
   ITEM_POOL.forEach(it=>{ for(let i=0;i<3;i++) deck.push({...it}); });
@@ -667,23 +727,22 @@ function newSetup(){
   state = { phase:"draft", players:{
     1:{ name:"Player 1", drawn:null, active:[], bench:[], itemDeck:buildItemDeck(), hand:[], lost:0 },
     2:{ name:"Player 2", drawn:null, active:[], bench:[], itemDeck:buildItemDeck(), hand:[], lost:0 },
-  }, draftPlayer:1, active:1, selection:null, log:["<span class=\"turn-tag\">Both players will now draft six characters.</span>"], winner:null };
+  }, draftPlayer:1, active:1, selection:null, turnFlags:{attacked:false, itemUsed:false}, lastRoll:null,
+  log:["<span class=\"turn-tag\">Both players will now draft six characters.</span>"], winner:null };
   draftFor(1);
   render();
 }
 function draftFor(num){
   const p = state.players[num];
   const drawn = shuffle(ROSTER).slice(0,6).map(freshCard);
-  p.drawn = drawn.map((c,i)=> ({...c, bench: i>=4})); // default: first 4 active, last 2 bench
+  p.drawn = drawn.map((c,i)=> ({...c, bench: i>=4}));
 }
 function toggleDraftBench(cardId){
   const p = state.players[state.draftPlayer];
   const activeCount = p.drawn.filter(c=>!c.bench).length;
   const card = p.drawn.find(c=>c.id===cardId);
-  if(!card.bench && activeCount<=1) return; // must keep at least 1 active... (soft guard)
-  if(card.bench && activeCount>=4) { // need to bench someone else first
-    return;
-  }
+  if(!card.bench && activeCount<=1) return;
+  if(card.bench && activeCount>=4) return;
   card.bench = !card.bench;
   render();
 }
@@ -720,7 +779,9 @@ function markLost(playerNum){
   }
 }
 
+/* ---- attacking ---- */
 function selectCard(cardId){
+  if(state.turnFlags.attacked) return;
   const mat = state.players[state.active].active;
   const card = mat.find(c=>c.id===cardId && c.alive);
   if(!card) return;
@@ -731,14 +792,17 @@ function selectMove(idx){
   const active = state.players[state.active].active;
   const card = active.find(c=>c.id===state.selection.cardId);
   const move = card.moves[idx];
-  if(card.lockedMoveIdx===idx) return;
+  if(card.cooldowns[idx] > 0) return;
   if(!checkSynergy(move, active)) return;
-  if(move.heal){ // self-only heal move, resolves immediately
+  if(move.heal){ // self-only heal move, resolves immediately, no to-hit roll
     const roll = rollDice(move.heal);
     card.curHp = Math.min(card.hp, card.curHp+roll.total);
     log(`<b>${card.name}</b> channels <i>${move.name}</i> — <span class="roll">rolls ${roll.label} → ${roll.total}</span> <span class="heal">(+${roll.total} HP)</span>.`);
-    card.lockedMoveIdx = idx;
-    endTurn();
+    card.cooldowns[idx] = 2;
+    state.lastRoll = { kind:"heal", dice:roll.rolls, bonus:roll.bonus, total:roll.total, label:"Heal" };
+    state.turnFlags.attacked = true;
+    state.selection = null;
+    render();
     return;
   }
   state.selection.moveIdx = idx;
@@ -753,8 +817,23 @@ function selectTarget(targetId){
   const target = defenderMat.find(c=>c.id===targetId && c.alive);
   if(!attacker || !target || sel.moveIdx===null) return;
   const move = attacker.moves[sel.moveIdx];
+
+  const toHit = rollD20();
+  attacker.cooldowns[sel.moveIdx] = 2;
+
+  if(toHit <= MISS_MAX){
+    log(`<b>${attacker.name}</b> attempts <i>${move.name}</i> on <b>${target.name}</b> — <span class="roll">to-hit roll ${toHit}/20</span> — <span class="miss">MISS!</span>`);
+    state.lastRoll = { kind:"miss", toHit };
+    state.turnFlags.attacked = true;
+    state.selection = null;
+    render();
+    return;
+  }
+
   const roll = rollDice(move.dice);
   let dmg = roll.total;
+  const isCrit = toHit >= CRIT_MIN;
+  if(isCrit) dmg = dmg * 2;
   let shieldNote = "";
   if(target.shielded){ dmg = Math.round(dmg/2); target.shielded=false; shieldNote = " (halved by Shield Ward)"; }
   target.curHp = Math.max(0, target.curHp-dmg);
@@ -764,27 +843,31 @@ function selectTarget(targetId){
     attacker.curHp = Math.min(attacker.hp, attacker.curHp+hroll.total);
     healNote = ` <span class="heal">${attacker.name} drains +${hroll.total} HP.</span>`;
   }
-  log(`<b>${attacker.name}</b> uses <i>${move.name}</i> on <b>${target.name}</b> — <span class="roll">rolls ${roll.label} → ${dmg} dmg</span>${shieldNote}.${healNote}`);
-  attacker.lockedMoveIdx = sel.moveIdx;
+  log(`<b>${attacker.name}</b> uses <i>${move.name}</i> on <b>${target.name}</b> — <span class="roll">to-hit ${toHit}/20${isCrit?" CRITICAL!":""}</span>, <span class="roll">rolls ${roll.label} → ${dmg} dmg</span>${shieldNote}.${healNote}`);
+  state.lastRoll = { kind: isCrit?"crit":"hit", toHit, dice:roll.rolls, bonus:roll.bonus, total:dmg };
   if(target.curHp<=0){
     target.alive=false;
     log(`<span class="hit">${target.name} falls.</span>`);
     markLost(defenderNum);
   }
-  endTurn();
+  state.turnFlags.attacked = true;
+  state.selection = null;
+  render();
 }
 
-/* --- items --- */
+/* ---- items ---- */
 function playItem(itemIdx){
+  if(state.turnFlags.itemUsed) return;
   const p = state.players[state.active];
   const item = p.hand[itemIdx];
   if(!item) return;
   if(item.type==="self"){
     resolveSelfItem(item);
     p.hand.splice(itemIdx,1);
-    endTurn();
+    state.turnFlags.itemUsed = true;
+    render();
   } else {
-    state.selection = { kind:"item", itemIdx, item };
+    state.selection = { kind:"item", itemIdx, item, phase:1 };
     render();
   }
 }
@@ -809,12 +892,11 @@ function itemTargetCard(cardId){
   if(!target) return;
   if(item.id==="heal"){
     if(!target.alive) return;
-    const roll = rollDice({n:2,d:6,bonus:0});
     target.curHp = Math.min(target.hp, target.curHp+10);
     log(`<b>${p.name}</b> uses <i>Healing Draught</i> on <b>${target.name}</b> — <span class="heal">+10 HP</span>.`);
   } else if(item.id==="secondwind"){
     if(!target.alive) return;
-    target.lockedMoveIdx = null;
+    target.cooldowns = target.cooldowns.map(()=>0);
     log(`<b>${p.name}</b> uses <i>Second Wind</i> — <b>${target.name}</b>'s moves are fully recharged.`);
   } else if(item.id==="guard"){
     if(!target.alive) return;
@@ -822,7 +904,9 @@ function itemTargetCard(cardId){
     log(`<b>${p.name}</b> uses <i>Shield Ward</i> on <b>${target.name}</b> — next hit halved.`);
   }
   p.hand.splice(sel.itemIdx,1);
-  endTurn();
+  state.turnFlags.itemUsed = true;
+  state.selection = null;
+  render();
 }
 function itemSwapBench(benchId){
   const sel = state.selection;
@@ -836,14 +920,49 @@ function itemSwapBench(benchId){
   p.active[emptySlotIdx] = benchCard;
   log(`<b>${p.name}</b> uses <i>Call Reinforcement</i> — <b>${benchCard.name}</b> takes the field!`);
   p.hand.splice(sel.itemIdx,1);
-  endTurn();
+  state.turnFlags.itemUsed = true;
+  state.selection = null;
+  render();
+}
+function rotateEject(cardId){
+  const sel = state.selection;
+  if(!sel || sel.kind!=="item" || sel.item.id!=="rotate" || sel.phase!==1) return;
+  const p = state.players[state.active];
+  const card = p.active.find(c=>c.id===cardId && c.alive);
+  if(!card) return;
+  sel.ejectId = cardId;
+  sel.phase = 2;
+  render();
+}
+function rotateBench(benchId){
+  const sel = state.selection;
+  if(!sel || sel.kind!=="item" || sel.item.id!=="rotate" || sel.phase!==2) return;
+  const p = state.players[state.active];
+  const benchCard = p.bench.find(c=>c.id===benchId && c.alive);
+  if(!benchCard) return;
+  const idx = p.active.findIndex(c=>c.id===sel.ejectId);
+  if(idx===-1) return;
+  const ejected = p.active[idx];
+  p.active[idx] = benchCard;
+  p.bench = p.bench.filter(c=>c.id!==benchId);
+  p.bench.push(ejected);
+  log(`<b>${p.name}</b> uses <i>Tactical Rotation</i> — <b>${ejected.name}</b> pulls back, <b>${benchCard.name}</b> takes the field.`);
+  p.hand.splice(sel.itemIdx,1);
+  state.turnFlags.itemUsed = true;
+  state.selection = null;
+  render();
 }
 
-function endTurn(){
+function finishTurn(){
   if(state.phase!=="over"){
     state.active = opponentOf(state.active);
     state.selection = null;
-    log(`<span class="turn-tag">— ${state.players[state.active].name}'s turn —</span>`);
+    state.turnFlags = {attacked:false, itemUsed:false};
+    const p = state.players[state.active];
+    [...p.active, ...p.bench].forEach(c=>{
+      if(c.cooldowns) c.cooldowns = c.cooldowns.map(v=> v>0 ? v-1 : 0);
+    });
+    log(`<span class="turn-tag">— ${p.name}'s turn —</span>`);
   }
   render();
 }
@@ -852,6 +971,11 @@ function endTurn(){
 function sealHtml(faction){
   const f = FACTIONS[faction];
   return `<div class="seal" style="background:${f.color}">${f.seal}</div>`;
+}
+function artImg(card, f, size){
+  if(!card.art) return `<span style="font-size:${size||22}px;color:${f.color};opacity:.5;">${f.seal}</span>`;
+  const fallback = `this.style.display='none'; this.parentElement.innerHTML+='<span style=\\'font-size:${size||22}px;color:${f.color};opacity:.5;\\'>${f.seal}</span>';`;
+  return `<img src="${card.art}" onerror="${fallback}" style="width:100%;height:100%;object-fit:cover;border-radius:5px;">`;
 }
 function cardHtml(card, ctx){
   const f = FACTIONS[card.faction];
@@ -862,16 +986,50 @@ function cardHtml(card, ctx){
   if(ctx.isSelectable) cls += " selectable";
   if(ctx.isSelected) cls += " selected";
   if(ctx.isTargetable) cls += " targetable";
+  if(ctx.usedUp) cls += " usedup";
   return `
     <div class="${cls}" data-card="${card.id}" data-owner="${ctx.owner}">
       ${sealHtml(card.faction)}
-      <div class="art-box">${card.art ? `<img src="${card.art}" onerror="this.style.display='none'; this.parentElement.innerHTML+='<span style=\\'font-size:22px;color:${f.color};opacity:.5;\\'>${f.seal}</span>';" style="width:100%;height:100%;object-fit:cover;border-radius:5px;">` : `<span style="font-size:22px;color:${f.color};opacity:.5;">${f.seal}</span>`}</div>
+      <div class="art-box">${artImg(card, f)}</div>
       <div class="fac-tag" style="color:${f.color}">${f.name}</div>
       <div class="nm">${card.name}${card.shielded?" \u{1F6E1}":""}</div>
       <div class="hpwrap"><div class="hpbar" style="width:${pct}%; background:${barColor}"></div></div>
       <div class="hptext">${Math.max(0,card.curHp)} / ${card.hp} HP</div>
     </div>
   `;
+}
+function benchMiniHtml(p){
+  if(p.bench.length===0) return `<div class="d-hint">No bench characters.</div>`;
+  return `<div class="bench-mini-row">${p.bench.map(c=>{
+    const f = FACTIONS[c.faction];
+    const pct = Math.max(0, Math.round((c.curHp/c.hp)*100));
+    return `
+      <div class="bench-mini ${!c.alive?'dead':''}">
+        <div class="bm-art">${c.art?`<img src="${c.art}" onerror="this.style.display='none';">`:`<span style="font-size:16px;color:${f.color};opacity:.5;">${f.seal}</span>`}</div>
+        <div class="bm-nm">${c.name}</div>
+        <div class="bm-hp">${c.alive? `${Math.max(0,c.curHp)}/${c.hp} HP` : 'Fallen'}</div>
+      </div>`;
+  }).join("")}</div>`;
+}
+function rollPanelHtml(){
+  if(!state.lastRoll) return "";
+  const r = state.lastRoll;
+  let body = "";
+  if(r.kind === "miss"){
+    body = `<div class="dice-row"><div class="die-face d20 miss">${r.toHit}</div><span class="roll-plus">/20 to-hit</span></div>
+            <span class="roll-tag miss">MISS</span>`;
+  } else if(r.kind === "heal"){
+    body = `<div class="dice-row">${r.dice.map(d=>`<div class="die-face">${d}</div>`).join("")}
+            ${r.bonus?`<span class="roll-plus">+${r.bonus}</span>`:""}
+            <span class="roll-eq">= ${r.total} HP</span></div>`;
+  } else {
+    body = `<div class="dice-row"><div class="die-face d20 ${r.kind==='crit'?'':''}">${r.toHit}</div><span class="roll-plus">to-hit</span></div>
+            <div class="dice-row" style="margin-top:6px;">${r.dice.map(d=>`<div class="die-face">${d}</div>`).join("")}
+            ${r.bonus?`<span class="roll-plus">+${r.bonus}</span>`:""}
+            <span class="roll-eq">= ${r.total} dmg</span></div>
+            ${r.kind==='crit'?`<span class="roll-tag crit">CRITICAL HIT (x2)</span>`:`<span class="roll-tag hit">HIT</span>`}`;
+  }
+  return `<div class="roll-panel"><div class="roll-label">Last Roll</div>${body}</div>`;
 }
 
 function renderDraft(){
@@ -880,7 +1038,7 @@ function renderDraft(){
   const p = state.players[num];
   const activeCount = p.drawn.filter(c=>!c.bench).length;
   root.innerHTML = `
-    <div class="eyebrow">Valkorath // Prototype Build v2</div>
+    <div class="eyebrow">Valkorath // Prototype Build v3</div>
     <h1>VALKORATH: CLASH</h1>
     <div class="sub">Local hot-seat. Pass the device between drafts and turns.</div>
     <div class="panel">
@@ -889,14 +1047,14 @@ function renderDraft(){
         ${p.drawn.map(c=>{
           const f = FACTIONS[c.faction];
           return `<div class="draft-card ${c.bench?'bench':''}" data-draft="${c.id}">
-            <div class="art-box">${c.art?`<img src="${c.art}" onerror="this.style.display='none'; this.parentElement.innerHTML+='<span style=\\'font-size:20px;color:${f.color};opacity:.5;\\'>${f.seal}</span>';" style="width:100%;height:100%;object-fit:cover;border-radius:5px;">`:`<span style="font-size:20px;color:${f.color};opacity:.5;">${f.seal}</span>`}</div>
+            <div class="art-box">${artImg(c, f, 20)}</div>
             <div class="dc-fac" style="color:${f.color}">${f.name}</div>
             <div class="dc-nm">${c.name}</div>
             <div class="dc-tag" style="color:${c.bench?'#8a6d2e':'#3f5d3a'}">${c.bench?"Bench":"Active"}</div>
           </div>`;
         }).join("")}
       </div>
-      <div class="sub" style="margin-bottom:8px;">Click a card to toggle Active / Bench. Choose exactly 4 active — the other 2 sit in reserve and can be called in with a Call Reinforcement item card.</div>
+      <div class="sub" style="margin-bottom:8px;">Click a card to toggle Active / Bench. Choose exactly 4 active — the other 2 sit in reserve and can be called in with an item card.</div>
       <button class="btn" id="confirmDraft" ${activeCount!==4?"disabled":""}>Confirm & ${num===1?"Pass to Player 2":"Begin Battle"}</button>
     </div>
   `;
@@ -906,21 +1064,46 @@ function renderDraft(){
   document.getElementById("confirmDraft").onclick = confirmDraft;
 }
 
-function movePanelHtml(card, activeMat){
-  return card.moves.map((m,i)=>{
-    const synergyOk = checkSynergy(m, activeMat);
-    const onCooldown = card.lockedMoveIdx===i;
-    const usable = synergyOk && !onCooldown;
-    const label = m.dice ? `${m.dice.n}d${m.dice.d}${m.dice.bonus?"+"+m.dice.bonus:""}` : (m.heal ? `heal ${m.heal.n}d${m.heal.d}${m.heal.bonus?"+"+m.heal.bonus:""}` : "");
-    return `
-      <button class="movebtn" ${usable?"":"disabled"} data-moveidx="${i}">
-        <div class="mv-top"><span>${m.name}</span><span class="mv-dmg">${label}</span></div>
-        <div class="mv-desc">${m.desc}${m.healSelf?" (also heals self)":""}</div>
-        ${!synergyOk ? `<span class="locked-tag">Requires ally on mat: ${ROSTER.find(r=>r.id===m.requires).name}</span>` : ""}
-        ${onCooldown ? `<span class="locked-tag">Recharging — used last turn</span>` : ""}
-      </button>
-    `;
-  }).join("");
+function detailsBoxHtml(){
+  const active = state.active;
+  const p = state.players[active];
+  const sel = state.selection;
+
+  if(sel && sel.kind==="card"){
+    const card = p.active.find(c=>c.id===sel.cardId);
+    return `<div class="details-box"><div class="d-title">${card.name}'s Moves</div>
+      ${card.moves.map((m,i)=>{
+        const synergyOk = checkSynergy(m, p.active);
+        const cd = card.cooldowns[i];
+        const range = diceRange(m.dice || m.heal);
+        const statLabel = m.dice ? `Damage: ${range.min}\u2013${range.max} (avg ${range.avg})` : `Heal: ${range.min}\u2013${range.max} (avg ${range.avg})`;
+        return `<div class="d-entry">
+          <div class="d-nm">${m.name}</div>
+          <div class="d-flavor">${m.desc}</div>
+          <div class="d-stats">${statLabel}</div>
+          ${!synergyOk?`<div class="d-lock">Requires ally on mat: ${ROSTER.find(r=>r.id===m.requires).name}</div>`:""}
+          ${cd>0?`<div class="d-lock">Recharging — ${cd>=2?'used last turn':'ready next turn'}</div>`:""}
+        </div>`;
+      }).join("")}
+      <div class="d-hint">A hit can still miss (roll 1\u20134 on the d20) or land a critical (roll 19\u201320, double damage).</div>
+    </div>`;
+  }
+  if(sel && sel.kind==="card" && sel.moveIdx!==null){
+    // unreachable branch kept for clarity; handled above via moveIdx null check upstream
+  }
+  if(sel && sel.kind==="item"){
+    return `<div class="details-box"><div class="d-title">${sel.item.name}</div>
+      <div class="d-entry"><div class="d-flavor">${sel.item.desc}</div></div>
+      <div class="d-hint">${sel.item.id==='rotate' ? (sel.phase===1 ? "Click one of your active characters to pull them off the field." : "Now click a bench character to send them in.") : "Click a target on your mat."}</div>
+    </div>`;
+  }
+  // default: show full item hand descriptions
+  return `<div class="details-box"><div class="d-title">Your Item Hand</div>
+    ${p.hand.length===0 ? `<div class="d-hint">No item cards left.</div>` : p.hand.map(it=>`
+      <div class="d-entry"><div class="d-nm">${it.name}</div><div class="d-flavor">${it.desc}</div></div>
+    `).join("")}
+    <div class="d-hint">Each turn you may attack with one character AND play one item card, in either order, then end your turn.</div>
+  </div>`;
 }
 
 function renderBattle(){
@@ -935,13 +1118,14 @@ function renderBattle(){
   function matHtml(playerNum, isOwnMat){
     const pl = state.players[playerNum];
     let slots = pl.active.map(card=>{
-      const isSelectable = isOwnMat && card.alive && !sel && state.phase==="battle";
+      const isSelectable = isOwnMat && card.alive && !sel && !state.turnFlags.attacked && state.phase==="battle";
       const isSelected = selectedCard && card.id===selectedCard.id;
       const isTargetable = (awaitingTarget && playerNum===other && card.alive) ||
-                            (awaitingItemTarget && ["heal","secondwind","guard"].includes(sel.item.id) && playerNum===active && card.alive);
-      return cardHtml(card, {owner:playerNum, isSelectable, isSelected, isTargetable});
+                            (awaitingItemTarget && ["heal","secondwind","guard"].includes(sel.item.id) && playerNum===active && card.alive) ||
+                            (awaitingItemTarget && sel.item.id==="rotate" && sel.phase===1 && playerNum===active && card.alive);
+      const usedUp = isOwnMat && state.turnFlags.attacked && !isSelected;
+      return cardHtml(card, {owner:playerNum, isSelectable, isSelected, isTargetable, usedUp});
     });
-    // pad empty slots up to 4, with swap option if it's own mat & item=swap active
     while(slots.length<4){
       const showSwap = isOwnMat && awaitingItemTarget && sel.item.id==="swap" && pl.bench.some(c=>c.alive);
       slots.push(`<div class="slot-empty">Fallen${showSwap?` <span class="swap-hint" data-swapslot="1">tap a bench card &rarr;</span>`:""}</div>`);
@@ -954,51 +1138,68 @@ function renderBattle(){
       const benchCards = p.bench.filter(c=>c.alive);
       return `
         <div class="side-title">Call Reinforcement</div>
-        <div class="dice-readout">Choose a bench character to send into the fallen slot.</div>
-        ${benchCards.length===0 ? `<div class="mv-desc">No living bench characters.</div>` :
-          benchCards.map(c=>`<div class="item-card" data-benchtarget="${c.id}"><div class="it-nm">${c.name}</div><div class="it-desc">${FACTIONS[c.faction].name} — ${c.curHp}/${c.hp} HP</div></div>`).join("")}
+        ${benchCards.length===0 ? `<div class="d-hint">No living bench characters.</div>` :
+          benchCards.map(c=>`<div class="item-card" data-benchtarget="${c.id}"><div class="it-nm">${c.name}</div></div>`).join("")}
+        <button class="btn secondary wide" id="cancelSel">Cancel</button>
+      `;
+    }
+    if(awaitingItemTarget && sel.item.id==="rotate" && sel.phase===2){
+      const benchCards = p.bench.filter(c=>c.alive);
+      return `
+        <div class="side-title">Send In...</div>
+        ${benchCards.length===0 ? `<div class="d-hint">No living bench characters.</div>` :
+          benchCards.map(c=>`<div class="item-card" data-rotatebench="${c.id}"><div class="it-nm">${c.name}</div></div>`).join("")}
         <button class="btn secondary wide" id="cancelSel">Cancel</button>
       `;
     }
     if(awaitingItemTarget){
       return `
         <div class="side-title">${sel.item.name}</div>
-        <div class="dice-readout">${sel.item.desc}<br><br>Click one of your active characters to target.</div>
         <button class="btn secondary wide" id="cancelSel">Cancel</button>
       `;
     }
     if(selectedCard && !awaitingTarget){
       return `
-        <div class="side-title">${selectedCard.name}'s Moves</div>
-        ${movePanelHtml(selectedCard, p.active)}
+        <div class="side-title">${selectedCard.name}</div>
+        ${selectedCard.moves.map((m,i)=>{
+          const synergyOk = checkSynergy(m, p.active);
+          const cd = selectedCard.cooldowns[i];
+          const usable = synergyOk && cd===0;
+          const range = diceRange(m.dice || m.heal);
+          return `
+            <button class="movebtn" ${usable?"":"disabled"} data-moveidx="${i}">
+              <div class="mv-top"><span>${m.name}</span><span class="mv-dmg">~${range.avg}<span class="range">(${range.min}\u2013${range.max})</span></span></div>
+              ${!synergyOk?`<span class="mv-lock">Needs ally on mat</span>`:""}
+              ${cd>0?`<span class="mv-cd">Recharging</span>`:""}
+            </button>
+          `;
+        }).join("")}
         <button class="btn secondary wide" id="cancelSel">Cancel</button>
       `;
     }
     if(awaitingTarget){
       return `
         <div class="side-title">Choose a Target</div>
-        <div class="dice-readout">Click an enemy character to strike with <b>${selectedCard.moves[sel.moveIdx].name}</b>.</div>
         <button class="btn secondary wide" id="cancelSel">Cancel</button>
       `;
     }
-    // default: tabs for attack (pick a card) / items
+    // default view: item hand (compact) + bench mini
     return `
-      <div class="side-title">${p.name}'s Turn</div>
-      <div class="dice-readout">Select a character on your mat to attack, or play an item card below. Either one uses your turn.</div>
-      <div class="side-title" style="margin-top:16px;">Item Hand</div>
-      ${p.hand.length===0 ? `<div class="mv-desc">No item cards left.</div>` : p.hand.map((it,i)=>`
-        <div class="item-card" data-itemidx="${i}">
+      <div class="side-title">Item Hand</div>
+      ${p.hand.length===0 ? `<div class="d-hint">No item cards left.</div>` : p.hand.map((it,i)=>`
+        <div class="item-card ${state.turnFlags.itemUsed?'disabled':''}" data-itemidx="${i}">
           <div class="it-nm">${it.name}</div>
-          <div class="it-desc">${it.desc}</div>
         </div>
       `).join("")}
+      <div class="bench-mini-title">Your Bench</div>
+      ${benchMiniHtml(p)}
     `;
   };
 
   root.innerHTML = `
-    <div class="eyebrow">Valkorath // Prototype Build v2</div>
+    <div class="eyebrow">Valkorath // Prototype Build v3</div>
     <h1>VALKORATH: CLASH</h1>
-    <div class="sub">Local hot-seat — the full Valkorath cast, drafted independently by each player. Swap in real art whenever ready.</div>
+    <div class="sub">Local hot-seat — the full Valkorath cast. One attack AND one item card per turn, in either order.</div>
     <div class="layout">
       <div>
         <div class="panel">
@@ -1010,14 +1211,19 @@ function renderBattle(){
         </div>
         <div class="panel">
           <div class="row-label">
-            <span class="name active">${p.name} (acting)</span>
+            <span class="name active">${p.name} (acting)${state.turnFlags.attacked?" — attack used":""}${state.turnFlags.itemUsed?" — item used":""}</span>
             <span class="lives">${[0,1,2].map(i=>`<span class="skull ${i<p.lost?'lost':''}">&#9760;</span>`).join("")}</span>
           </div>
           ${matHtml(active, true)}
         </div>
+        ${detailsBoxHtml()}
         <div class="log">${state.log.map(l=>`<div>${l}</div>`).join("")}</div>
       </div>
-      <div class="panel sidebar">${rightPanel()}</div>
+      <div class="panel sidebar">
+        ${rollPanelHtml()}
+        ${rightPanel()}
+        <div class="end-turn-wrap"><button class="btn wide" id="endTurnBtn">End Turn</button></div>
+      </div>
     </div>
   `;
 
@@ -1027,9 +1233,11 @@ function renderBattle(){
       const cardId = el.dataset.card;
       if(awaitingItemTarget && ["heal","secondwind","guard"].includes(sel.item.id) && owner===active){
         itemTargetCard(cardId);
+      } else if(awaitingItemTarget && sel.item.id==="rotate" && sel.phase===1 && owner===active){
+        rotateEject(cardId);
       } else if(awaitingTarget && owner===other){
         selectTarget(cardId);
-      } else if(!sel && owner===active){
+      } else if(!sel && owner===active && !state.turnFlags.attacked){
         selectCard(cardId);
       }
     });
@@ -1043,14 +1251,18 @@ function renderBattle(){
   root.querySelectorAll(".item-card[data-benchtarget]").forEach(el=>{
     el.addEventListener("click", ()=> itemSwapBench(el.dataset.benchtarget));
   });
+  root.querySelectorAll(".item-card[data-rotatebench]").forEach(el=>{
+    el.addEventListener("click", ()=> rotateBench(el.dataset.rotatebench));
+  });
   const cancelBtn = document.getElementById("cancelSel");
   if(cancelBtn) cancelBtn.onclick = ()=>{ state.selection=null; render(); };
+  document.getElementById("endTurnBtn").onclick = finishTurn;
 }
 
 function renderOver(){
   const root = document.getElementById("root");
   root.innerHTML = `
-    <div class="eyebrow">Valkorath // Prototype Build v2</div>
+    <div class="eyebrow">Valkorath // Prototype Build v3</div>
     <h1>VALKORATH: CLASH</h1>
     <div class="winscreen">
       <h2>${state.players[state.winner].name} is victorious</h2>
@@ -1066,12 +1278,12 @@ function render(){
   const root = document.getElementById("root");
   if(!state){
     root.innerHTML = `
-      <div class="eyebrow">Valkorath // Prototype Build v2</div>
+      <div class="eyebrow">Valkorath // Prototype Build v3</div>
       <h1>VALKORATH: CLASH</h1>
-      <div class="sub">A hot-seat two-player battler drawing from the full Valkorath cast — Heroes, the Royal House of Tiadel,
-      the Forces of Darkness, the Velkynai, Challenge of Rights participants, and neutral figures. Each player drafts an
-      independent 6-character hand (4 active, 2 bench), plus 3 item cards. <b>One action per turn:</b> attack with a mat
-      character (dice-based damage, moves recharge after use) or play an item card. Lose three characters and the battle is over.</div>
+      <div class="sub">A hot-seat two-player battler drawing from the full Valkorath cast. Each player drafts an
+      independent 6-character hand (4 active, 2 bench), plus 3 item cards. <b>Each turn:</b> attack with a mat character
+      AND play an item card, in either order, then end your turn. Attacks roll to-hit (miss on 1\u20134, critical on 19\u201320)
+      then damage dice. Moves recharge one full turn after use. Lose three characters and the battle is over.</div>
       <div class="banner">
         <h2>Ready to draft?</h2>
         <p>Player 1 drafts first, then passes the device to Player 2. Both decks are separate — you can both field the same character if the dice favor you.</p>
@@ -1087,6 +1299,7 @@ function render(){
 }
 
 render();
+
 </script>
 </body>
 </html>
