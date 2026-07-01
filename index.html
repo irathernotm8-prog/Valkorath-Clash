@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VALKORATH: CLASH — Prototype v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wood: #1c130c;
+    --wood-2: #241a10;
+    --leather: #2c2013;
+    --parchment: #f1e4c0;
+    --parchment-2: #e7d6a4;
+    --parchment-line: #c9b378;
+    --ink: #2b1d12;
+    --ink-dim: #6b5a3e;
+    --gold: #c9a227;
+    --gold-bright: #e6c34a;
+    --burgundy: #7a1f2b;
+    --burgundy-bright: #a8324a;
+    --forest: #3f5d3a;
+    --steel: #48586a;
+    --violet: #5c4a8a;
+    --shadow-red: #6b2b3a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;
+    background:
+      radial-gradient(ellipse at top, #2a1d10 0%, var(--wood) 60%),
+      var(--wood);
+    color:var(--parchment);
+    font-family:'EB Garamond', Georgia, serif;
+  }
+  #root{max-width:1320px;margin:0 auto;padding:26px 18px 60px;}
+
+  .eyebrow{
+    font-family:'Cinzel',serif; letter-spacing:.24em; text-transform:uppercase;
+    font-size:11px; color:var(--gold); margin-bottom:6px;
+  }
+  h1{
+    font-family:'Cinzel',serif; font-size:32px; margin:0 0 6px; font-weight:900;
+    color:var(--parchment); letter-spacing:.03em;
+    text-shadow:0 2px 0 #000, 0 0 22px rgba(201,162,39,.25);
+  }
+  .sub{color:#c9bd9c; font-size:14px; margin-bottom:22px; max-width:700px; line-height:1.6;}
+  .sub b{color:var(--gold-bright);}
+
+  .layout{display:grid; grid-template-columns:1fr 320px; gap:18px; align-items:start;}
+  @media (max-width:920px){ .layout{grid-template-columns:1fr;} }
+
+  .panel{
+    background:linear-gradient(180deg, var(--leather), var(--wood-2));
+    border:1px solid #47341d; border-radius:14px;
+    padding:18px; margin-bottom:16px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,.35);
+  }
+  .row-label{
+    font-family:'Cinzel',serif; font-size:12px; letter-spacing:.14em;
+    text-transform:uppercase; color:#a9946a; margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .row-label .name{color:var(--parchment);}
+  .row-label .name.active{color:var(--gold-bright); text-shadow:0 0 10px rgba(230,195,74,.4);}
+  .lives{font-family:'Cinzel',serif; font-size:11px; letter-spacing:.08em;}
+  .lives .skull{opacity:.35; margin-left:2px;}
+  .lives .skull.lost{opacity:1; color:var(--burgundy-bright);}
+
+  .mat{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+  .slot-empty{
+    min-height:190px; border:2px dashed #4a3820; border-radius:10px;
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;
+    color:#5a4a30; font-family:'Cinzel',serif; font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .slot-empty .swap-hint{
+    background:var(--forest); color:#eef; padding:5px 9px; border-radius:6px; font-size:10px;
+    cursor:pointer; color:#eee7cf;
+  }
+
+  .card{
+    position:relative; border-radius:10px; padding:10px 9px 9px; cursor:pointer;
+    background:
+      linear-gradient(180deg, var(--parchment) 0%, var(--parchment-2) 100%);
+    border:2px solid var(--parchment-line);
+    box-shadow: 0 3px 0 rgba(0,0,0,.4), inset 0 0 18px rgba(120,90,30,.12);
+    color:var(--ink); transition:transform .12s, box-shadow .12s;
+  }
+  .card::before{
+    content:""; position:absolute; inset:5px; border:1px solid rgba(43,29,18,.25);
+    border-radius:6px; pointer-events:none;
+  }
+  .card:hover{transform:translateY(-3px);}
+  .card.selectable{box-shadow:0 0 0 2px var(--gold), 0 3px 0 rgba(0,0,0,.4);}
+  .card.selected{box-shadow:0 0 0 2px var(--burgundy-bright), 0 0 16px -2px var(--burgundy-bright);}
+  .card.targetable{box-shadow:0 0 0 2px var(--burgundy-bright), 0 0 16px -2px var(--burgundy-bright); cursor:crosshair;}
+  .card.dead{opacity:.3; pointer-events:none; filter:grayscale(1);}
+
+  .seal{
+    width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:14px; color:#fff2d0; float:right; margin-left:6px;
+    box-shadow: 0 2px 3px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.15);
+    font-family:'Cinzel',serif;
+  }
+  .art-box{
+    width:100%; height:120px; border-radius:6px; margin-bottom:7px;
+    background: repeating-linear-gradient(135deg, rgba(43,29,18,.06) 0 8px, rgba(43,29,18,.02) 8px 16px);
+    border:1px solid rgba(43,29,18,.2);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .fac-tag{
+    font-family:'Cinzel',serif; font-size:9px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-dim); margin-bottom:2px;
+  }
+  .nm{font-family:'Cinzel',serif; font-size:13px; font-weight:700; margin-bottom:7px; line-height:1.25; clear:both;}
+  .hpwrap{background:#00000022; border-radius:5px; height:8px; overflow:hidden; margin-bottom:3px; border:1px solid rgba(43,29,18,.3);}
+  .hpbar{height:100%; transition:width .3s;}
+  .hptext{font-family:'Cinzel',serif; font-size:10px; color:var(--ink-dim);}
+  .bench-tag{
+    position:absolute; top:6px; left:6px; background:var(--forest); color:#eee;
+    font-family:'Cinzel',serif; font-size:8.5px; padding:2px 6px; border-radius:4px; letter-spacing:.08em;
+  }
+  .lock-tag{
+    position:absolute; bottom:6px; right:8px; font-size:13px; filter:drop-shadow(0 0 3px #000);
+  }
+
+  /* SIDEBAR */
+  .sidebar{position:sticky; top:14px;}
+  .side-title{font-family:'Cinzel',serif; font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-bright); margin-bottom:10px;}
+  .dice-readout{
+    background:#00000030; border:1px solid #47341d; border-radius:8px; padding:10px 12px; margin-bottom:12px;
+    font-family:'Cinzel',serif; font-size:12px; color:#d9c98f; min-height:20px;
+  }
+  .movebtn{
+    display:block; width:100%; text-align:left; background:linear-gradient(180deg,#e9dcb6,#dcc98d);
+    border:1.5px solid #8a6d2e; color:var(--ink); border-radius:8px;
+    padding:9px 11px; margin-bottom:8px; cursor:pointer; font-family:'EB Garamond',serif;
+  }
+  .movebtn:hover:not(:disabled){border-color:var(--burgundy);}
+  .movebtn:disabled{opacity:.4; cursor:not-allowed; filter:grayscale(.4);}
+  .mv-top{display:flex; justify-content:space-between; font-weight:700; font-family:'Cinzel',serif; font-size:12px;}
+  .mv-dmg{color:var(--burgundy); font-family:'Cinzel',serif;}
+  .mv-desc{color:var(--ink-dim); font-size:12px; margin-top:3px; font-style:italic;}
+  .locked-tag{color:var(--burgundy); font-size:10.5px; font-family:'Cinzel',serif; margin-top:3px; display:block;}
+
+  .tabbar{display:flex; gap:6px; margin-bottom:12px;}
+  .tabbtn{
+    flex:1; background:#00000030; border:1px solid #47341d; color:#a9946a;
+    font-family:'Cinzel',serif; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    padding:8px 4px; border-radius:7px; cursor:pointer;
+  }
+  .tabbtn.active{background:var(--burgundy); color:#f3e6c4; border-color:var(--gold);}
+
+  .item-card{
+    background:linear-gradient(180deg,#f1e4c0,#e2ceA0); border:1.5px solid var(--violet); border-radius:8px;
+    padding:9px 10px; margin-bottom:8px; cursor:pointer; color:var(--ink);
+  }
+  .item-card:hover{border-color:var(--gold-bright);}
+  .item-card .it-nm{font-family:'Cinzel',serif; font-weight:700; font-size:12px; color:var(--violet);}
+  .item-card .it-desc{font-size:11.5px; font-style:italic; color:var(--ink-dim); margin-top:2px;}
+  .item-card.disabled{opacity:.35; pointer-events:none;}
+
+  .btn{
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold)); color:#241a0a; border:1px solid #8a6d2e;
+    border-radius:8px; padding:11px 16px; font-family:'Cinzel',serif; font-weight:700; font-size:12.5px;
+    cursor:pointer; letter-spacing:.03em;
+  }
+  .btn:hover{filter:brightness(1.07);}
+  .btn.secondary{background:#00000030; color:#c9bd9c; border:1px solid #47341d;}
+  .btn.wide{width:100%; margin-top:4px;}
+
+  .log{
+    background:#00000035; border:1px solid #47341d; border-radius:10px;
+    padding:12px 14px; height:150px; overflow-y:auto; font-size:13px; line-height:1.7; color:#c9bd9c;
+  }
+  .log .turn-tag{color:var(--gold-bright); font-family:'Cinzel',serif; font-weight:700;}
+  .log .hit{color:var(--burgundy-bright);}
+  .log .heal{color:#8fbf7a;}
+  .log .roll{color:#9fb0c9; font-style:italic;}
+
+  .banner{
+    text-align:center; padding:60px 24px; background:linear-gradient(180deg, var(--leather), var(--wood-2));
+    border-radius:14px; border:1px solid #47341d;
+  }
+  .banner h2{font-family:'Cinzel',serif; font-size:22px; margin-bottom:10px; color:var(--gold-bright);}
+  .banner p{color:#c9bd9c; font-size:14px; max-width:520px; margin:0 auto 24px; line-height:1.7;}
+
+  .draft-row{display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin:18px 0;}
+  .draft-card{
+    background:linear-gradient(180deg,var(--parchment),var(--parchment-2)); border:2px solid var(--parchment-line);
+    border-radius:9px; padding:9px; color:var(--ink); cursor:pointer; text-align:center;
+  }
+  .draft-card.bench{opacity:.55;}
+  .draft-card .dc-nm{font-family:'Cinzel',serif; font-size:11.5px; font-weight:700; margin-top:4px;}
+  .draft-card .dc-fac{font-family:'Cinzel',serif; font-size:8.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-dim);}
+  .draft-card .dc-tag{font-family:'Cinzel',serif; font-size:9px; margin-top:5px; letter-spacing:.06em; text-transform:uppercase;}
+
+  .winscreen{text-align:center; padding:70px 20px;}
+  .winscreen h2{font-family:'Cinzel',serif; font-size:30px; color:var(--gold-bright); margin-bottom:10px;}
+  .winscreen p{color:#c9bd9c; margin-bottom:26px;}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:#4a3820; border-radius:8px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+/* ============ VALKORATH ROSTER — swap `art` fields for real portraits whenever ready ============ */
+const FACTIONS = {
+  light:     { name: "Forces of Light",     color: "#c9a227", seal:"\u2600\uFE0F" },
+  tiadel:    { name: "Royal House of Tiadel", color: "#2e4d7a", seal:"\uD83D\uDC51" },
+  darkness:  { name: "Forces of Darkness",  color: "#4a1f2b", seal:"\uD83D\uDC80" },
+  velkynai:  { name: "The Velkynai",        color: "#5c4a8a", seal:"\uD83C\uDF19" },
+  challenge: { name: "Challenge of Rights", color: "#8a4a2e", seal:"\u2694\uFE0F" },
+  neutral:   { name: "Neutral / Background",color: "#4a5568", seal:"\u2696\uFE0F" },
+};
+
+// dice: {n, d, bonus} -> damage = sum(n rolls of 1..d) + bonus
+// cooldown auto-applies to whichever move was just used (locked for that card's next action)
+const ROSTER = [
+  /* ---------- FORCES OF LIGHT / HEROES ---------- */
+  { id:"reign", name:"Reign", faction:"light", hp:30, art:"assets/reign.jpg", moves:[
+    {name:"Thunderstrike Slash", dice:{n:1,d:8,bonus:4}, desc:"Channels his brother's legendary blade."},
+    {name:"Bastion's Resolve", dice:{n:2,d:6,bonus:3}, desc:"Rallies the Last Bastion alongside Vis.", requires:"vis"},
+  ]},
+  { id:"vis", name:"Vis", faction:"light", hp:22, art:"assets/vis.jpg", moves:[
+    {name:"Venomous Lash", dice:{n:1,d:6,bonus:3}, desc:"A poison-tipped strike that lingers."},
+    {name:"Marshbound Curse", dice:{n:2,d:6,bonus:2}, desc:"Channels the Marshlands' decay with Reign.", requires:"reign"},
+  ]},
+  { id:"garran", name:"Sir Garran", faction:"light", hp:30, art:"assets/garran.jpg", moves:[
+    {name:"Guard's Strike", dice:{n:1,d:8,bonus:3}, desc:"Disciplined blade work of Tiadel's finest."},
+    {name:"Iron Oath", dice:{n:1,d:10,bonus:3}, desc:"A defensive counter sworn to protect the crown."},
+  ]},
+  { id:"aegen", name:"Aegen", faction:"light", hp:22, art:"assets/aegen.jpg", moves:[
+    {name:"Arcane Ward", dice:{n:1,d:6,bonus:2}, desc:"A defensive ward of old magic."},
+    {name:"Order's Insight", dice:{n:1,d:8,bonus:3}, desc:"Strikes with wisdom from the Hidden Holy Order."},
+  ]},
+  { id:"zephyr", name:"Zephyr", faction:"light", hp:23, art:"assets/zephyr.jpg", moves:[
+    {name:"Windstep Strike", dice:{n:1,d:6,bonus:4}, desc:"A blindingly fast aerial strike."},
+    {name:"Gale Fury", dice:{n:2,d:6,bonus:2}, desc:"A relentless flurry of wind-born blows."},
+  ]},
+  { id:"lina", name:"Lina", faction:"light", hp:19, art:"assets/lina.jpg", moves:[
+    {name:"Arcane Bolt", dice:{n:1,d:8,bonus:3}, desc:"A crackling bolt of raw magic."},
+    {name:"Spirit Tether", dice:{n:2,d:6,bonus:2}, desc:"Channels power through her bond with Taron.", requires:"taron"},
+  ]},
+  { id:"taron", name:"Taron", faction:"light", hp:24, art:"assets/taron.jpg", moves:[
+    {name:"Spectral Blade", dice:{n:1,d:8,bonus:3}, desc:"A blade that cuts through flesh and spirit alike."},
+    {name:"Tethered Wrath", dice:{n:2,d:6,bonus:3}, desc:"Draws strength from his bond with Lina.", requires:"lina"},
+  ]},
+  { id:"draven", name:"Draven Blackscale", faction:"light", hp:29, art:"assets/draven.jpg", moves:[
+    {name:"Dragon Claw", dice:{n:1,d:8,bonus:4}, desc:"Raking claws with draconic force."},
+    {name:"Scaled Fury", dice:{n:2,d:6,bonus:3}, desc:"Unleashes his half-dragon rage."},
+  ]},
+  { id:"thorne", name:"Sir Thorne Valecross", faction:"light", hp:27, art:"assets/thorne.jpg", moves:[
+    {name:"Runic Guard", dice:{n:1,d:6,bonus:3}, desc:"Ancient wards reinforce his blade."},
+    {name:"Veteran's Strike", dice:{n:1,d:10,bonus:3}, desc:"Decades of battle experience in one blow."},
+  ]},
+  { id:"khaelor", name:"Khaelor", faction:"light", hp:24, art:"assets/khaelor.jpg", moves:[
+    {name:"Decay Touch", dice:{n:1,d:6,bonus:3}, desc:"Withers flesh with corrupted nature magic."},
+    {name:"Marsh Communion", heal:{n:1,d:8,bonus:3}, desc:"Draws healing from the cursed marshlands."},
+  ]},
+  { id:"grull", name:"Grull", faction:"light", hp:30, art:"assets/grull.jpg", moves:[
+    {name:"Tribal Cleave", dice:{n:1,d:8,bonus:4}, desc:"A brutal orcish cleave."},
+    {name:"War Cry", dice:{n:1,d:6,bonus:3}, desc:"Rallies with a thunderous roar."},
+  ]},
+  { id:"zarok", name:"Zarok", faction:"light", hp:30, art:"assets/zarok.jpg", moves:[
+    {name:"Crimson Smash", dice:{n:1,d:8,bonus:4}, desc:"A furious hammering blow."},
+    {name:"Blood Rage", dice:{n:2,d:6,bonus:2}, desc:"Fights harder the more he bleeds."},
+  ]},
+  { id:"kharon", name:"Kharon", faction:"light", hp:31, art:"assets/kharon.jpg", moves:[
+    {name:"Iron Bulwark", dice:{n:1,d:6,bonus:3}, desc:"A crushing shield strike."},
+    {name:"Oathbound Charge", dice:{n:1,d:10,bonus:3}, desc:"Charges forward on his sworn oath."},
+  ]},
+  { id:"david", name:"Priest David", faction:"light", hp:18, art:"assets/david.jpg", moves:[
+    {name:"Sacred Flame", dice:{n:1,d:6,bonus:3}, desc:"A blessed strike of holy fire."},
+    {name:"Prayer of Mending", heal:{n:1,d:8,bonus:2}, desc:"A young priest's healing prayer."},
+  ]},
+  { id:"grallok", name:"Grallok", faction:"light", hp:34, art:"assets/grallok.jpg", moves:[
+    {name:"Golem Slam", dice:{n:1,d:8,bonus:4}, desc:"An earth-shaking fist."},
+    {name:"Sealing Ward", dice:{n:2,d:6,bonus:3}, desc:"Channels the power that sealed Zornath."},
+  ]},
+  { id:"liora", name:"Liora", faction:"light", hp:23, art:"assets/liora.jpg", moves:[
+    {name:"Radiant Strike", dice:{n:1,d:8,bonus:3}, desc:"A blinding strike of pure light."},
+    {name:"Convergence", dice:{n:2,d:8,bonus:3}, desc:"Reaches for her other half to unleash Aetheris.", requires:"umbros"},
+  ]},
+  { id:"umbros", name:"Umbros", faction:"light", hp:23, art:"assets/umbros.jpg", moves:[
+    {name:"Umbral Strike", dice:{n:1,d:8,bonus:3}, desc:"A crushing strike of pure shadow."},
+    {name:"Convergence", dice:{n:2,d:8,bonus:3}, desc:"Reaches for his other half to unleash Aetheris.", requires:"liora"},
+  ]},
+  { id:"aetheris", name:"Aetheris", faction:"light", hp:38, art:"assets/aetheris.jpg", moves:[
+    {name:"Balance Strike", dice:{n:1,d:10,bonus:4}, desc:"Strikes with perfectly balanced light and shadow."},
+    {name:"Guardian's Judgment", dice:{n:2,d:8,bonus:4}, desc:"The full might of the unified Titan."},
+  ]},
+  { id:"alexis", name:"Alexis", faction:"light", hp:22, art:null, moves:[
+    {name:"Redemption's Edge", dice:{n:1,d:8,bonus:3}, desc:"A blade wielded to atone for past betrayal."},
+    {name:"Elven Grace", dice:{n:1,d:6,bonus:3}, desc:"Swift elven swordplay."},
+  ]},
+  { id:"fredric", name:"Fredric", faction:"light", hp:26, art:"assets/fredric.jpg", moves:[
+    {name:"Future's Blade", dice:{n:1,d:8,bonus:4}, desc:"Wields a blade not yet forged in this era."},
+    {name:"Bastion's Legacy", dice:{n:2,d:6,bonus:3}, desc:"Fights with his parents' resolve.", requires:"reign"},
+  ]},
+  { id:"saeve", name:"Saeve", faction:"light", hp:20, art:null, moves:[
+    {name:"Elven Bowcraft", dice:{n:1,d:8,bonus:3}, desc:"A precise elven arrow."},
+    {name:"Village Ward", heal:{n:1,d:6,bonus:3}, desc:"Calls on the Elven Village's protective magic."},
+  ]},
+  { id:"solas", name:"Solas", faction:"light", hp:25, art:"assets/solas.jpg", moves:[
+    {name:"Silver Tongue's Cut", dice:{n:1,d:8,bonus:3}, desc:"A legendary strike echoing from the past."},
+    {name:"Thunderstrike's Legacy", dice:{n:2,d:6,bonus:3}, desc:"The blade remembers its first master.", requires:"reign"},
+  ]},
+
+  /* ---------- ROYAL HOUSE OF TIADEL ---------- */
+  { id:"valerius", name:"King Valerius III", faction:"tiadel", hp:27, art:"assets/valerius.jpg", moves:[
+    {name:"Royal Decree", dice:{n:1,d:6,bonus:3}, desc:"Commands the battlefield with royal authority."},
+    {name:"Crownguard Strike", dice:{n:1,d:8,bonus:3}, desc:"Strikes with the weight of the throne."},
+  ]},
+  { id:"felix", name:"King Felix", faction:"tiadel", hp:26, art:"assets/felix.jpg", moves:[
+    {name:"Noble Strike", dice:{n:1,d:8,bonus:3}, desc:"A strike befitting a beloved king."},
+    {name:"Legacy of Peace", heal:{n:1,d:6,bonus:3}, desc:"Draws renewed strength from a peaceful reign."},
+  ]},
+  { id:"dreyfus", name:"King Dreyfus", faction:"tiadel", hp:28, art:"assets/dreyfus.jpg", moves:[
+    {name:"Warking's Blade", dice:{n:1,d:8,bonus:4}, desc:"A veteran ruler's battle-tested strike."},
+    {name:"Old Rivalry", dice:{n:2,d:6,bonus:3}, desc:"Channels his old war against Malakar."},
+  ]},
+  { id:"maxim", name:"Maxim", faction:"tiadel", hp:24, art:"assets/maxim.jpg", moves:[
+    {name:"Ageless Ward", dice:{n:1,d:6,bonus:3}, desc:"Ancient magic given form."},
+    {name:"Order's Command", dice:{n:2,d:6,bonus:2}, desc:"Directs the Hidden Holy Order's hidden power."},
+  ]},
+  { id:"tyrus", name:"Sir Tyrus", faction:"tiadel", hp:32, art:"assets/tyrus.jpg", moves:[
+    {name:"Gilded Blade", dice:{n:1,d:8,bonus:4}, desc:"A legendary golden strike."},
+    {name:"Merged Souls", dice:{n:2,d:8,bonus:3}, desc:"Channels the sacrifice of Aldric and Valeria.", requires:"aldric"},
+  ]},
+  { id:"aldric", name:"Sir Aldric", faction:"tiadel", hp:20, art:"assets/aldric.jpg", moves:[
+    {name:"Sacrificial Strike", dice:{n:1,d:6,bonus:3}, desc:"A blow given weight by sacrifice."},
+    {name:"Bound Oath", dice:{n:1,d:8,bonus:3}, desc:"Fights beside Valeria until the end.", requires:"valeria"},
+  ]},
+  { id:"valeria", name:"Lady Valeria", faction:"tiadel", hp:20, art:"assets/valeria.jpg", moves:[
+    {name:"Valiant Strike", dice:{n:1,d:6,bonus:3}, desc:"A noble warrior's final stand."},
+    {name:"Bound Oath", dice:{n:1,d:8,bonus:3}, desc:"Fights beside Aldric until the end.", requires:"aldric"},
+  ]},
+  { id:"baldric", name:"Sir Baldric", faction:"tiadel", hp:27, art:"assets/baldric.jpg", moves:[
+    {name:"Templar's Judgment", dice:{n:1,d:8,bonus:3}, desc:"A righteous blow of the southern Templar Order."},
+    {name:"Mentor's Lesson", dice:{n:2,d:6,bonus:2}, desc:"Trains Alaric's blade even now.", requires:"alaric"},
+  ]},
+  { id:"alaric", name:"Alaric", faction:"tiadel", hp:23, art:"assets/alaric.jpg", moves:[
+    {name:"Apprentice's Strike", dice:{n:1,d:6,bonus:3}, desc:"Eager, unrefined templar swordplay."},
+    {name:"Fading Faith", dice:{n:2,d:6,bonus:3}, desc:"A strike shadowed by encroaching corruption."},
+  ]},
+  { id:"ryzer", name:"Sir Ryzer", faction:"tiadel", hp:21, art:"assets/ryzer.jpg", moves:[
+    {name:"Swift Blade", dice:{n:1,d:6,bonus:4}, desc:"A blindingly fast cut."},
+    {name:"Flanking Strike", dice:{n:1,d:8,bonus:3}, desc:"Strikes before the enemy can react."},
+  ]},
+  { id:"titanus", name:"Titanus", faction:"tiadel", hp:33, art:"assets/titanus.jpg", moves:[
+    {name:"Sentinel's Wall", dice:{n:1,d:6,bonus:3}, desc:"An immovable defensive strike."},
+    {name:"Titan's Smash", dice:{n:1,d:10,bonus:4}, desc:"A colossal hammer blow."},
+  ]},
+  { id:"cental", name:"Cental", faction:"tiadel", hp:24, art:"assets/cental.jpg", moves:[
+    {name:"White Flame", dice:{n:1,d:8,bonus:3}, desc:"A searing holy strike."},
+    {name:"Purifying Blaze", dice:{n:2,d:6,bonus:3}, desc:"Burns away corruption."},
+  ]},
+  { id:"kandor", name:"Kandor", faction:"tiadel", hp:28, art:"assets/kandor.jpg", moves:[
+    {name:"Thunderstrike Echo", dice:{n:1,d:8,bonus:4}, desc:"The legendary blade's first wielder strikes again."},
+    {name:"Summoned Resolve", dice:{n:2,d:6,bonus:3}, desc:"Fights alongside the one who summoned him.", requires:"reign"},
+  ]},
+
+  /* ---------- FORCES OF DARKNESS ---------- */
+  { id:"drexl", name:"Lord Drexl", faction:"darkness", hp:36, art:"assets/drexl.jpg", moves:[
+    {name:"Shattered Truth", dice:{n:1,d:10,bonus:4}, desc:"A devastating blow that shatters illusions."},
+    {name:"Warlord's Command", dice:{n:2,d:8,bonus:3}, desc:"Commands his lieutenants into a coordinated strike.", requires:"nyxis"},
+  ]},
+  { id:"nyxis", name:"Nyxis (Shadowfang)", faction:"darkness", hp:22, art:"assets/nyxis.jpg", moves:[
+    {name:"Shadowfang Strike", dice:{n:1,d:8,bonus:4}, desc:"An unseen killing blow."},
+    {name:"Wraith Step", dice:{n:1,d:6,bonus:3}, desc:"Vanishes and reappears mid-strike."},
+  ]},
+  { id:"armadus", name:"Armadus", faction:"darkness", hp:29, art:"assets/armadus.jpg", moves:[
+    {name:"Enforcer's Wrath", dice:{n:1,d:8,bonus:3}, desc:"A brutal, disciplined strike."},
+    {name:"Dark Resolve", dice:{n:1,d:10,bonus:3}, desc:"Unshakable loyalty made manifest."},
+  ]},
+  { id:"gorvath", name:"Gorvath (Skullbreaker)", faction:"darkness", hp:33, art:"assets/gorvath.jpg", moves:[
+    {name:"Skull Crusher", dice:{n:1,d:10,bonus:4}, desc:"A bone-shattering blow."},
+    {name:"Rune-Carved Fury", dice:{n:2,d:6,bonus:3}, desc:"His runic armor pulses with dark power."},
+  ]},
+  { id:"vorthar", name:"Vorthar (Crimson Lancer)", faction:"darkness", hp:25, art:"assets/vorthar.jpg", moves:[
+    {name:"Crimson Lance", dice:{n:1,d:8,bonus:4}, desc:"A reality-bending lance thrust."},
+    {name:"Fractured Reality", dice:{n:2,d:6,bonus:3}, desc:"Bends space around his strike."},
+  ]},
+  { id:"vorath", name:"Vorath the Torturer", faction:"darkness", hp:27, art:"assets/vorath.jpg", moves:[
+    {name:"Torturer's Cut", dice:{n:1,d:8,bonus:4}, desc:"A cruel, corrupted blade."},
+    {name:"Malakar's Gift", dice:{n:2,d:6,bonus:3}, desc:"Wields power granted by Malakar."},
+  ]},
+  { id:"malakar", name:"Malakar", faction:"darkness", hp:37, art:"assets/malakar.jpg", moves:[
+    {name:"Chaos Unleashed", dice:{n:1,d:10,bonus:4}, desc:"Raw chaotic magic given form."},
+    {name:"Absorbed Might", dice:{n:2,d:8,bonus:4}, desc:"Channels Corthos's stolen power.", requires:"corthos"},
+  ]},
+  { id:"silas", name:"Silas", faction:"darkness", hp:21, art:null, moves:[
+    {name:"Rogue Hex", dice:{n:1,d:8,bonus:3}, desc:"An unpredictable arcane strike."},
+    {name:"Opportunist's Gambit", dice:{n:1,d:6,bonus:4}, desc:"Strikes where it's least expected."},
+  ]},
+  { id:"slender", name:"Slender (Chain-Wielder)", faction:"darkness", hp:24, art:"assets/slender.jpg", moves:[
+    {name:"Chain Lash", dice:{n:1,d:8,bonus:3}, desc:"A whipping strike of iron chain."},
+    {name:"Binding Coil", dice:{n:1,d:6,bonus:3}, desc:"Ensnares the enemy before striking."},
+  ]},
+  { id:"frenry", name:"Frenry (Fire Templar)", faction:"darkness", hp:26, art:"assets/frenry.jpg", moves:[
+    {name:"Templar's Blaze", dice:{n:1,d:8,bonus:3}, desc:"A corrupted holy fire."},
+    {name:"Infernal Vessel", dice:{n:2,d:6,bonus:3}, desc:"Zornath's presence bleeds through.", requires:"zornath"},
+  ]},
+  { id:"zornath", name:"Zornath (Infernal Maw)", faction:"darkness", hp:38, art:"assets/zornath.jpg", moves:[
+    {name:"Infernal Maw", dice:{n:1,d:10,bonus:4}, desc:"A devouring blast of hellfire."},
+    {name:"Possession", dice:{n:2,d:8,bonus:3}, desc:"Surges through Frenry's body.", requires:"frenry"},
+  ]},
+  { id:"obsidyn", name:"Obsidyn (Steel Shade)", faction:"darkness", hp:28, art:"assets/obsidyn.jpg", moves:[
+    {name:"Steel Shade Strike", dice:{n:1,d:8,bonus:4}, desc:"A cold mechanical strike."},
+    {name:"Bounty Protocol", dice:{n:1,d:6,bonus:3}, desc:"Relentlessly tracks its target."},
+  ]},
+  { id:"blyght", name:"Blyght", faction:"darkness", hp:30, art:"assets/blyght.jpg", moves:[
+    {name:"Shadow Mage's Edge", dice:{n:1,d:8,bonus:4}, desc:"A blade wreathed in dark magic."},
+    {name:"Kabal's Command", dice:{n:2,d:6,bonus:3}, desc:"Directs the Black Kabal's forces."},
+  ]},
+  { id:"corthos", name:"Corthos (Clockwork Sentinel)", faction:"darkness", hp:36, art:"assets/corthos.jpg", moves:[
+    {name:"Clockwork Barrage", dice:{n:1,d:10,bonus:3}, desc:"A relentless mechanical assault."},
+    {name:"Sentinel Protocol", dice:{n:1,d:6,bonus:3}, desc:"Defensive precision strikes."},
+  ]},
+  { id:"enoch", name:"Enoch", faction:"darkness", hp:32, art:"assets/enoch.jpg", moves:[
+    {name:"Hidden Corruption", dice:{n:1,d:8,bonus:4}, desc:"A strike laced with ancient deceit."},
+    {name:"Order's Betrayal", dice:{n:2,d:6,bonus:3}, desc:"Turns the Order's own power against them."},
+  ]},
+  { id:"earon", name:"Earon (Blackbird Knight)", faction:"darkness", hp:26, art:"assets/earon.jpg", moves:[
+    {name:"Blackbird's Talon", dice:{n:1,d:8,bonus:3}, desc:"A swift, loyal strike."},
+    {name:"Enoch's Will", dice:{n:1,d:6,bonus:4}, desc:"Fights with unwavering devotion."},
+  ]},
+
+  /* ---------- THE VELKYNAI ---------- */
+  { id:"ventric", name:"Ventric", faction:"velkynai", hp:28, art:"assets/ventric.jpg", moves:[
+    {name:"Crypt-Forged Blade", dice:{n:1,d:8,bonus:4}, desc:"Ancient dark elven steel."},
+    {name:"Ambitious Strike", dice:{n:2,d:6,bonus:3}, desc:"Strikes to reclaim lost glory."},
+  ]},
+  { id:"diatre", name:"Diatre (Horned Queen)", faction:"velkynai", hp:25, art:"assets/diatre.jpg", moves:[
+    {name:"Horned Queen's Fury", dice:{n:1,d:8,bonus:4}, desc:"A wild, violent strike."},
+    {name:"Impulsive Rage", dice:{n:1,d:6,bonus:4}, desc:"Strikes without hesitation or restraint."},
+  ]},
+  { id:"leon", name:"Leon the Deceitful", faction:"velkynai", hp:20, art:"assets/leon.jpg", moves:[
+    {name:"Deceiver's Cut", dice:{n:1,d:6,bonus:4}, desc:"A cunning, unexpected strike."},
+    {name:"Trickster's Gambit", dice:{n:1,d:8,bonus:3}, desc:"Turns the enemy's own tactics against them."},
+  ]},
+
+  /* ---------- CHALLENGE OF RIGHTS PARTICIPANTS ---------- */
+  { id:"tendo", name:"Tendo", faction:"challenge", hp:23, art:"assets/tendo.jpg", moves:[
+    {name:"Cloak-Bound Strike", dice:{n:1,d:8,bonus:3}, desc:"His sentient cloak lashes out."},
+    {name:"Whispering Shroud", dice:{n:1,d:6,bonus:3}, desc:"The cloak murmurs secrets mid-battle."},
+  ]},
+  { id:"hythm", name:"Hythm", faction:"challenge", hp:26, art:"assets/hythm.jpg", moves:[
+    {name:"Hermit's Fist", dice:{n:1,d:8,bonus:3}, desc:"A reclusive warrior's honed strike."},
+    {name:"Mountain's Endurance", dice:{n:1,d:6,bonus:3}, desc:"Draws stamina from years of isolation."},
+  ]},
+  { id:"kazadar", name:"King Kazadar", faction:"challenge", hp:34, art:"assets/kazadar.jpg", moves:[
+    {name:"Malice Incarnate", dice:{n:1,d:10,bonus:4}, desc:"A strike born of pure malice."},
+    {name:"Tyrant's Wrath", dice:{n:2,d:6,bonus:3}, desc:"The fury of an ancient tyrant."},
+  ]},
+  { id:"decker", name:"Decker", faction:"challenge", hp:24, art:"assets/decker.jpg", moves:[
+    {name:"Precision Strike", dice:{n:1,d:8,bonus:4}, desc:"A calculated mercenary's blow."},
+    {name:"Mechanical Reload", dice:{n:1,d:6,bonus:3}, desc:"Resets for another precise shot."},
+  ]},
+  { id:"dreyfushell", name:"King Dreyfus (Hell)", faction:"challenge", hp:33, art:null, moves:[
+    {name:"Damned King's Edge", dice:{n:1,d:10,bonus:4}, desc:"A blade forged in the depths of Hell."},
+    {name:"Infernal Summons", dice:{n:2,d:6,bonus:3}, desc:"Calls Moltar to fight beside him.", requires:"moltar"},
+  ]},
+  { id:"moltar", name:"Moltar", faction:"challenge", hp:34, art:"assets/moltar.jpg", moves:[
+    {name:"Corrupted Slam", dice:{n:1,d:10,bonus:3}, desc:"A golem's crushing fist, twisted by corruption."},
+    {name:"Hellforged Rage", dice:{n:2,d:6,bonus:3}, desc:"Fights beside the Damned King.", requires:"dreyfushell"},
+  ]},
+  { id:"ganador", name:"King Ganador", faction:"challenge", hp:29, art:"assets/ganador.jpg", moves:[
+    {name:"Cursed Cloak Strike", dice:{n:1,d:8,bonus:4}, desc:"Wields a stolen sentient cloak."},
+    {name:"Ancient Curse", dice:{n:2,d:6,bonus:3}, desc:"A curse older than the kingdom itself."},
+  ]},
+  { id:"patchwork", name:"Patchwork", faction:"challenge", hp:22, art:"assets/patchwork.jpg", moves:[
+    {name:"Poison Blade", dice:{n:1,d:6,bonus:3}, desc:"A toxin-laced strike."},
+    {name:"Stitched Resilience", dice:{n:1,d:8,bonus:3}, desc:"An unnaturally durable poison knight."},
+  ]},
+  { id:"caladan", name:"Caladan (King of Nothing)", faction:"challenge", hp:31, art:"assets/caladan.jpg", moves:[
+    {name:"Berserker's Rage", dice:{n:1,d:10,bonus:4}, desc:"An unrelenting berserker assault."},
+    {name:"King of Nothing", dice:{n:2,d:6,bonus:3}, desc:"Fights with nothing left to lose."},
+  ]},
+  { id:"landis", name:"King Landis", faction:"challenge", hp:27, art:"assets/landis.jpg", moves:[
+    {name:"Fireking's Blade", dice:{n:1,d:8,bonus:4}, desc:"A blazing royal strike."},
+    {name:"Vengeance for Helmut", dice:{n:2,d:6,bonus:3}, desc:"Fights with fury for his fallen companion.", requires:"helmut"},
+  ]},
+  { id:"helmut", name:"Helmut", faction:"challenge", hp:24, art:"assets/helmut.jpg", moves:[
+    {name:"Blazing Knight's Strike", dice:{n:1,d:8,bonus:3}, desc:"A knight wreathed in flame."},
+    {name:"Loyal Vanguard", dice:{n:1,d:6,bonus:4}, desc:"Fights beside Landis to the end.", requires:"landis"},
+  ]},
+  { id:"karethos", name:"Karethos (Dragon Lord)", faction:"challenge", hp:32, art:"assets/karethos.jpg", moves:[
+    {name:"Draconic Strike", dice:{n:1,d:10,bonus:4}, desc:"An elder dragon's devastating blow."},
+    {name:"Ancient Wrath", dice:{n:2,d:6,bonus:3}, desc:"Centuries of draconic fury."},
+  ]},
+  { id:"axeon", name:"Axeon (Orc Chieftain)", faction:"challenge", hp:30, art:"assets/axeon.jpg", moves:[
+    {name:"Chieftain's Axe", dice:{n:1,d:10,bonus:4}, desc:"A warlord's brutal axe swing."},
+    {name:"Warlord's Roar", dice:{n:1,d:6,bonus:4}, desc:"Rallies ancient orcish fury."},
+  ]},
+  { id:"chrieser", name:"King Chrieser (Soul Dust)", faction:"challenge", hp:28, art:"assets/chrieser.jpg", moves:[
+    {name:"Soul Dust Curse", dice:{n:1,d:8,bonus:4}, desc:"A curse that crumbles the living to dust."},
+    {name:"Ancient Tomb Magic", dice:{n:2,d:6,bonus:3}, desc:"Magic older than Valkorath itself."},
+  ]},
+
+  /* ---------- NEUTRAL / BACKGROUND ---------- */
+  { id:"death", name:"Death", faction:"neutral", hp:40, art:"assets/death.jpg", moves:[
+    {name:"Cosmic Reaping", dice:{n:1,d:10,bonus:5}, desc:"A strike beyond mortal comprehension."},
+    {name:"Overseer's Judgment", dice:{n:2,d:8,bonus:3}, desc:"Administers the Challenge itself."},
+  ]},
+  { id:"seren", name:"Seren", faction:"neutral", hp:20, art:"assets/seren.jpg", moves:[
+    {name:"Elven Farewell", dice:{n:1,d:8,bonus:3}, desc:"A graceful, final strike."},
+    {name:"Aunt's Ward", heal:{n:1,d:6,bonus:3}, desc:"Watches over her family even now."},
+  ]},
+  { id:"malchros", name:"Malchros (Possessed Armor)", faction:"neutral", hp:30, art:"assets/malchros.jpg", moves:[
+    {name:"Possessed Onslaught", dice:{n:1,d:10,bonus:4}, desc:"Animated armor driven by dark will."},
+    {name:"Hollow Resilience", dice:{n:1,d:6,bonus:3}, desc:"Empty armor absorbs the blow."},
+  ]},
+];
+
+const ITEM_POOL = [
+  { id:"heal", name:"Healing Draught", desc:"Restore 10 HP to one active character.", type:"target-own-alive" },
+  { id:"reshuffle", name:"Reshuffle Satchel", desc:"Discard your remaining item cards, draw 3 new ones.", type:"self" },
+  { id:"swap", name:"Call Reinforcement", desc:"Move a living bench character into an empty mat slot.", type:"swap" },
+  { id:"secondwind", name:"Second Wind", desc:"Clear the cooldown on one of your character's moves.", type:"target-own-alive" },
+  { id:"guard", name:"Shield Ward", desc:"Halve the next hit taken by one active character.", type:"target-own-alive" },
+  { id:"overdraw", name:"Merchant's Favor", desc:"Draw 1 extra item card.", type:"self" },
+];
+
+let state = null;
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function rollDice({n,d,bonus}){
+  const rolls=[];
+  for(let i=0;i<n;i++) rolls.push(1+Math.floor(Math.random()*d));
+  const total = rolls.reduce((a,b)=>a+b,0) + bonus;
+  return { rolls, bonus, total, label:`${n}d${d}${bonus?("+"+bonus):""}` };
+}
+function freshCard(def){ return { ...def, curHp:def.hp, alive:true, lockedMoveIdx:null, shielded:false, bench:false }; }
+function buildItemDeck(){
+  const deck=[];
+  ITEM_POOL.forEach(it=>{ for(let i=0;i<3;i++) deck.push({...it}); });
+  return shuffle(deck);
+}
+
+function newSetup(){
+  state = { phase:"draft", players:{
+    1:{ name:"Player 1", drawn:null, active:[], bench:[], itemDeck:buildItemDeck(), hand:[], lost:0 },
+    2:{ name:"Player 2", drawn:null, active:[], bench:[], itemDeck:buildItemDeck(), hand:[], lost:0 },
+  }, draftPlayer:1, active:1, selection:null, log:["<span class=\"turn-tag\">Both players will now draft six characters.</span>"], winner:null };
+  draftFor(1);
+  render();
+}
+function draftFor(num){
+  const p = state.players[num];
+  const drawn = shuffle(ROSTER).slice(0,6).map(freshCard);
+  p.drawn = drawn.map((c,i)=> ({...c, bench: i>=4})); // default: first 4 active, last 2 bench
+}
+function toggleDraftBench(cardId){
+  const p = state.players[state.draftPlayer];
+  const activeCount = p.drawn.filter(c=>!c.bench).length;
+  const card = p.drawn.find(c=>c.id===cardId);
+  if(!card.bench && activeCount<=1) return; // must keep at least 1 active... (soft guard)
+  if(card.bench && activeCount>=4) { // need to bench someone else first
+    return;
+  }
+  card.bench = !card.bench;
+  render();
+}
+function confirmDraft(){
+  const p = state.players[state.draftPlayer];
+  const activeCount = p.drawn.filter(c=>!c.bench).length;
+  if(activeCount !== 4) return;
+  p.active = p.drawn.filter(c=>!c.bench);
+  p.bench = p.drawn.filter(c=>c.bench);
+  p.hand = p.itemDeck.splice(0,3);
+  if(state.draftPlayer===1){
+    state.draftPlayer=2; draftFor(2);
+  } else {
+    state.phase="battle";
+    state.log.push(`<span class="turn-tag">— Player 1's turn —</span>`);
+  }
+  render();
+}
+
+function opponentOf(p){ return p===1?2:1; }
+function log(html){ state.log.push(html); if(state.log.length>80) state.log.shift(); }
+
+function checkSynergy(move, ownerActiveMat){
+  if(!move.requires) return true;
+  return ownerActiveMat.some(c=>c.id===move.requires && c.alive);
+}
+function markLost(playerNum){
+  const p = state.players[playerNum];
+  p.lost++;
+  if(p.lost>=3){
+    state.phase="over";
+    state.winner=opponentOf(playerNum);
+    log(`<b>${state.players[state.winner].name} wins!</b> ${p.name} has lost three characters.`);
+  }
+}
+
+function selectCard(cardId){
+  const mat = state.players[state.active].active;
+  const card = mat.find(c=>c.id===cardId && c.alive);
+  if(!card) return;
+  state.selection = { kind:"card", cardId, moveIdx:null };
+  render();
+}
+function selectMove(idx){
+  const active = state.players[state.active].active;
+  const card = active.find(c=>c.id===state.selection.cardId);
+  const move = card.moves[idx];
+  if(card.lockedMoveIdx===idx) return;
+  if(!checkSynergy(move, active)) return;
+  if(move.heal){ // self-only heal move, resolves immediately
+    const roll = rollDice(move.heal);
+    card.curHp = Math.min(card.hp, card.curHp+roll.total);
+    log(`<b>${card.name}</b> channels <i>${move.name}</i> — <span class="roll">rolls ${roll.label} → ${roll.total}</span> <span class="heal">(+${roll.total} HP)</span>.`);
+    card.lockedMoveIdx = idx;
+    endTurn();
+    return;
+  }
+  state.selection.moveIdx = idx;
+  render();
+}
+function selectTarget(targetId){
+  const sel = state.selection;
+  const attackerMat = state.players[state.active].active;
+  const attacker = attackerMat.find(c=>c.id===sel.cardId);
+  const defenderNum = opponentOf(state.active);
+  const defenderMat = state.players[defenderNum].active;
+  const target = defenderMat.find(c=>c.id===targetId && c.alive);
+  if(!attacker || !target || sel.moveIdx===null) return;
+  const move = attacker.moves[sel.moveIdx];
+  const roll = rollDice(move.dice);
+  let dmg = roll.total;
+  let shieldNote = "";
+  if(target.shielded){ dmg = Math.round(dmg/2); target.shielded=false; shieldNote = " (halved by Shield Ward)"; }
+  target.curHp = Math.max(0, target.curHp-dmg);
+  let healNote = "";
+  if(move.healSelf){
+    const hroll = rollDice(move.healSelf);
+    attacker.curHp = Math.min(attacker.hp, attacker.curHp+hroll.total);
+    healNote = ` <span class="heal">${attacker.name} drains +${hroll.total} HP.</span>`;
+  }
+  log(`<b>${attacker.name}</b> uses <i>${move.name}</i> on <b>${target.name}</b> — <span class="roll">rolls ${roll.label} → ${dmg} dmg</span>${shieldNote}.${healNote}`);
+  attacker.lockedMoveIdx = sel.moveIdx;
+  if(target.curHp<=0){
+    target.alive=false;
+    log(`<span class="hit">${target.name} falls.</span>`);
+    markLost(defenderNum);
+  }
+  endTurn();
+}
+
+/* --- items --- */
+function playItem(itemIdx){
+  const p = state.players[state.active];
+  const item = p.hand[itemIdx];
+  if(!item) return;
+  if(item.type==="self"){
+    resolveSelfItem(item);
+    p.hand.splice(itemIdx,1);
+    endTurn();
+  } else {
+    state.selection = { kind:"item", itemIdx, item };
+    render();
+  }
+}
+function resolveSelfItem(item){
+  const p = state.players[state.active];
+  if(item.id==="reshuffle"){
+    p.itemDeck.push(...p.hand.splice(0));
+    p.itemDeck = shuffle(p.itemDeck);
+    p.hand = p.itemDeck.splice(0,3);
+    log(`<b>${p.name}</b> uses <i>Reshuffle Satchel</i> — draws a fresh hand of 3.`);
+  } else if(item.id==="overdraw"){
+    if(p.itemDeck.length>0){ p.hand.push(p.itemDeck.shift()); }
+    log(`<b>${p.name}</b> uses <i>Merchant's Favor</i> — draws an extra item card.`);
+  }
+}
+function itemTargetCard(cardId){
+  const sel = state.selection;
+  if(!sel || sel.kind!=="item") return;
+  const p = state.players[state.active];
+  const item = sel.item;
+  const target = p.active.find(c=>c.id===cardId);
+  if(!target) return;
+  if(item.id==="heal"){
+    if(!target.alive) return;
+    const roll = rollDice({n:2,d:6,bonus:0});
+    target.curHp = Math.min(target.hp, target.curHp+10);
+    log(`<b>${p.name}</b> uses <i>Healing Draught</i> on <b>${target.name}</b> — <span class="heal">+10 HP</span>.`);
+  } else if(item.id==="secondwind"){
+    if(!target.alive) return;
+    target.lockedMoveIdx = null;
+    log(`<b>${p.name}</b> uses <i>Second Wind</i> — <b>${target.name}</b>'s moves are fully recharged.`);
+  } else if(item.id==="guard"){
+    if(!target.alive) return;
+    target.shielded = true;
+    log(`<b>${p.name}</b> uses <i>Shield Ward</i> on <b>${target.name}</b> — next hit halved.`);
+  }
+  p.hand.splice(sel.itemIdx,1);
+  endTurn();
+}
+function itemSwapBench(benchId){
+  const sel = state.selection;
+  if(!sel || sel.kind!=="item" || sel.item.id!=="swap") return;
+  const p = state.players[state.active];
+  const benchCard = p.bench.find(c=>c.id===benchId && c.alive);
+  if(!benchCard) return;
+  const emptySlotIdx = p.active.findIndex(c=>!c.alive);
+  if(emptySlotIdx===-1) return;
+  p.bench = p.bench.filter(c=>c.id!==benchId);
+  p.active[emptySlotIdx] = benchCard;
+  log(`<b>${p.name}</b> uses <i>Call Reinforcement</i> — <b>${benchCard.name}</b> takes the field!`);
+  p.hand.splice(sel.itemIdx,1);
+  endTurn();
+}
+
+function endTurn(){
+  if(state.phase!=="over"){
+    state.active = opponentOf(state.active);
+    state.selection = null;
+    log(`<span class="turn-tag">— ${state.players[state.active].name}'s turn —</span>`);
+  }
+  render();
+}
+
+/* ================= RENDER ================= */
+function sealHtml(faction){
+  const f = FACTIONS[faction];
+  return `<div class="seal" style="background:${f.color}">${f.seal}</div>`;
+}
+function cardHtml(card, ctx){
+  const f = FACTIONS[card.faction];
+  const pct = Math.max(0, Math.round((card.curHp/card.hp)*100));
+  const barColor = pct>50 ? "#4a7a3d" : (pct>20 ? "#b5871f" : "#8a2a35");
+  let cls = "card";
+  if(!card.alive) cls += " dead";
+  if(ctx.isSelectable) cls += " selectable";
+  if(ctx.isSelected) cls += " selected";
+  if(ctx.isTargetable) cls += " targetable";
+  return `
+    <div class="${cls}" data-card="${card.id}" data-owner="${ctx.owner}">
+      ${sealHtml(card.faction)}
+      <div class="art-box">${card.art ? `<img src="${card.art}" onerror="this.style.display='none'; this.parentElement.innerHTML+='<span style=\\'font-size:22px;color:${f.color};opacity:.5;\\'>${f.seal}</span>';" style="width:100%;height:100%;object-fit:cover;border-radius:5px;">` : `<span style="font-size:22px;color:${f.color};opacity:.5;">${f.seal}</span>`}</div>
+      <div class="fac-tag" style="color:${f.color}">${f.name}</div>
+      <div class="nm">${card.name}${card.shielded?" \u{1F6E1}":""}</div>
+      <div class="hpwrap"><div class="hpbar" style="width:${pct}%; background:${barColor}"></div></div>
+      <div class="hptext">${Math.max(0,card.curHp)} / ${card.hp} HP</div>
+    </div>
+  `;
+}
+
+function renderDraft(){
+  const root = document.getElementById("root");
+  const num = state.draftPlayer;
+  const p = state.players[num];
+  const activeCount = p.drawn.filter(c=>!c.bench).length;
+  root.innerHTML = `
+    <div class="eyebrow">Valkorath // Prototype Build v2</div>
+    <h1>VALKORATH: CLASH</h1>
+    <div class="sub">Local hot-seat. Pass the device between drafts and turns.</div>
+    <div class="panel">
+      <div class="row-label"><span class="name active">${p.name} — Draft your six</span><span>${activeCount}/4 active chosen</span></div>
+      <div class="draft-row">
+        ${p.drawn.map(c=>{
+          const f = FACTIONS[c.faction];
+          return `<div class="draft-card ${c.bench?'bench':''}" data-draft="${c.id}">
+            <div class="art-box">${c.art?`<img src="${c.art}" onerror="this.style.display='none'; this.parentElement.innerHTML+='<span style=\\'font-size:20px;color:${f.color};opacity:.5;\\'>${f.seal}</span>';" style="width:100%;height:100%;object-fit:cover;border-radius:5px;">`:`<span style="font-size:20px;color:${f.color};opacity:.5;">${f.seal}</span>`}</div>
+            <div class="dc-fac" style="color:${f.color}">${f.name}</div>
+            <div class="dc-nm">${c.name}</div>
+            <div class="dc-tag" style="color:${c.bench?'#8a6d2e':'#3f5d3a'}">${c.bench?"Bench":"Active"}</div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="sub" style="margin-bottom:8px;">Click a card to toggle Active / Bench. Choose exactly 4 active — the other 2 sit in reserve and can be called in with a Call Reinforcement item card.</div>
+      <button class="btn" id="confirmDraft" ${activeCount!==4?"disabled":""}>Confirm & ${num===1?"Pass to Player 2":"Begin Battle"}</button>
+    </div>
+  `;
+  root.querySelectorAll("[data-draft]").forEach(el=>{
+    el.addEventListener("click", ()=> toggleDraftBench(el.dataset.draft));
+  });
+  document.getElementById("confirmDraft").onclick = confirmDraft;
+}
+
+function movePanelHtml(card, activeMat){
+  return card.moves.map((m,i)=>{
+    const synergyOk = checkSynergy(m, activeMat);
+    const onCooldown = card.lockedMoveIdx===i;
+    const usable = synergyOk && !onCooldown;
+    const label = m.dice ? `${m.dice.n}d${m.dice.d}${m.dice.bonus?"+"+m.dice.bonus:""}` : (m.heal ? `heal ${m.heal.n}d${m.heal.d}${m.heal.bonus?"+"+m.heal.bonus:""}` : "");
+    return `
+      <button class="movebtn" ${usable?"":"disabled"} data-moveidx="${i}">
+        <div class="mv-top"><span>${m.name}</span><span class="mv-dmg">${label}</span></div>
+        <div class="mv-desc">${m.desc}${m.healSelf?" (also heals self)":""}</div>
+        ${!synergyOk ? `<span class="locked-tag">Requires ally on mat: ${ROSTER.find(r=>r.id===m.requires).name}</span>` : ""}
+        ${onCooldown ? `<span class="locked-tag">Recharging — used last turn</span>` : ""}
+      </button>
+    `;
+  }).join("");
+}
+
+function renderBattle(){
+  const root = document.getElementById("root");
+  const active = state.active, other = opponentOf(active);
+  const p = state.players[active], o = state.players[other];
+  const sel = state.selection;
+  const selectedCard = sel && sel.kind==="card" ? p.active.find(c=>c.id===sel.cardId) : null;
+  const awaitingTarget = selectedCard && sel.moveIdx!==null;
+  const awaitingItemTarget = sel && sel.kind==="item";
+
+  function matHtml(playerNum, isOwnMat){
+    const pl = state.players[playerNum];
+    let slots = pl.active.map(card=>{
+      const isSelectable = isOwnMat && card.alive && !sel && state.phase==="battle";
+      const isSelected = selectedCard && card.id===selectedCard.id;
+      const isTargetable = (awaitingTarget && playerNum===other && card.alive) ||
+                            (awaitingItemTarget && ["heal","secondwind","guard"].includes(sel.item.id) && playerNum===active && card.alive);
+      return cardHtml(card, {owner:playerNum, isSelectable, isSelected, isTargetable});
+    });
+    // pad empty slots up to 4, with swap option if it's own mat & item=swap active
+    while(slots.length<4){
+      const showSwap = isOwnMat && awaitingItemTarget && sel.item.id==="swap" && pl.bench.some(c=>c.alive);
+      slots.push(`<div class="slot-empty">Fallen${showSwap?` <span class="swap-hint" data-swapslot="1">tap a bench card &rarr;</span>`:""}</div>`);
+    }
+    return `<div class="mat">${slots.join("")}</div>`;
+  }
+
+  const rightPanel = () => {
+    if(awaitingItemTarget && sel.item.id==="swap"){
+      const benchCards = p.bench.filter(c=>c.alive);
+      return `
+        <div class="side-title">Call Reinforcement</div>
+        <div class="dice-readout">Choose a bench character to send into the fallen slot.</div>
+        ${benchCards.length===0 ? `<div class="mv-desc">No living bench characters.</div>` :
+          benchCards.map(c=>`<div class="item-card" data-benchtarget="${c.id}"><div class="it-nm">${c.name}</div><div class="it-desc">${FACTIONS[c.faction].name} — ${c.curHp}/${c.hp} HP</div></div>`).join("")}
+        <button class="btn secondary wide" id="cancelSel">Cancel</button>
+      `;
+    }
+    if(awaitingItemTarget){
+      return `
+        <div class="side-title">${sel.item.name}</div>
+        <div class="dice-readout">${sel.item.desc}<br><br>Click one of your active characters to target.</div>
+        <button class="btn secondary wide" id="cancelSel">Cancel</button>
+      `;
+    }
+    if(selectedCard && !awaitingTarget){
+      return `
+        <div class="side-title">${selectedCard.name}'s Moves</div>
+        ${movePanelHtml(selectedCard, p.active)}
+        <button class="btn secondary wide" id="cancelSel">Cancel</button>
+      `;
+    }
+    if(awaitingTarget){
+      return `
+        <div class="side-title">Choose a Target</div>
+        <div class="dice-readout">Click an enemy character to strike with <b>${selectedCard.moves[sel.moveIdx].name}</b>.</div>
+        <button class="btn secondary wide" id="cancelSel">Cancel</button>
+      `;
+    }
+    // default: tabs for attack (pick a card) / items
+    return `
+      <div class="side-title">${p.name}'s Turn</div>
+      <div class="dice-readout">Select a character on your mat to attack, or play an item card below. Either one uses your turn.</div>
+      <div class="side-title" style="margin-top:16px;">Item Hand</div>
+      ${p.hand.length===0 ? `<div class="mv-desc">No item cards left.</div>` : p.hand.map((it,i)=>`
+        <div class="item-card" data-itemidx="${i}">
+          <div class="it-nm">${it.name}</div>
+          <div class="it-desc">${it.desc}</div>
+        </div>
+      `).join("")}
+    `;
+  };
+
+  root.innerHTML = `
+    <div class="eyebrow">Valkorath // Prototype Build v2</div>
+    <h1>VALKORATH: CLASH</h1>
+    <div class="sub">Local hot-seat — the full Valkorath cast, drafted independently by each player. Swap in real art whenever ready.</div>
+    <div class="layout">
+      <div>
+        <div class="panel">
+          <div class="row-label">
+            <span class="name">${o.name}</span>
+            <span class="lives">${[0,1,2].map(i=>`<span class="skull ${i<o.lost?'lost':''}">&#9760;</span>`).join("")}</span>
+          </div>
+          ${matHtml(other, false)}
+        </div>
+        <div class="panel">
+          <div class="row-label">
+            <span class="name active">${p.name} (acting)</span>
+            <span class="lives">${[0,1,2].map(i=>`<span class="skull ${i<p.lost?'lost':''}">&#9760;</span>`).join("")}</span>
+          </div>
+          ${matHtml(active, true)}
+        </div>
+        <div class="log">${state.log.map(l=>`<div>${l}</div>`).join("")}</div>
+      </div>
+      <div class="panel sidebar">${rightPanel()}</div>
+    </div>
+  `;
+
+  root.querySelectorAll(".card[data-owner]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const owner = Number(el.dataset.owner);
+      const cardId = el.dataset.card;
+      if(awaitingItemTarget && ["heal","secondwind","guard"].includes(sel.item.id) && owner===active){
+        itemTargetCard(cardId);
+      } else if(awaitingTarget && owner===other){
+        selectTarget(cardId);
+      } else if(!sel && owner===active){
+        selectCard(cardId);
+      }
+    });
+  });
+  root.querySelectorAll(".movebtn[data-moveidx]").forEach(el=>{
+    el.addEventListener("click", ()=> selectMove(Number(el.dataset.moveidx)));
+  });
+  root.querySelectorAll(".item-card[data-itemidx]").forEach(el=>{
+    el.addEventListener("click", ()=> playItem(Number(el.dataset.itemidx)));
+  });
+  root.querySelectorAll(".item-card[data-benchtarget]").forEach(el=>{
+    el.addEventListener("click", ()=> itemSwapBench(el.dataset.benchtarget));
+  });
+  const cancelBtn = document.getElementById("cancelSel");
+  if(cancelBtn) cancelBtn.onclick = ()=>{ state.selection=null; render(); };
+}
+
+function renderOver(){
+  const root = document.getElementById("root");
+  root.innerHTML = `
+    <div class="eyebrow">Valkorath // Prototype Build v2</div>
+    <h1>VALKORATH: CLASH</h1>
+    <div class="winscreen">
+      <h2>${state.players[state.winner].name} is victorious</h2>
+      <p>${state.players[opponentOf(state.winner)].name} lost three characters. The field falls quiet.</p>
+      <button class="btn" id="restartBtn">Draft a New Battle</button>
+    </div>
+    <div class="log">${state.log.map(l=>`<div>${l}</div>`).join("")}</div>
+  `;
+  document.getElementById("restartBtn").onclick = newSetup;
+}
+
+function render(){
+  const root = document.getElementById("root");
+  if(!state){
+    root.innerHTML = `
+      <div class="eyebrow">Valkorath // Prototype Build v2</div>
+      <h1>VALKORATH: CLASH</h1>
+      <div class="sub">A hot-seat two-player battler drawing from the full Valkorath cast — Heroes, the Royal House of Tiadel,
+      the Forces of Darkness, the Velkynai, Challenge of Rights participants, and neutral figures. Each player drafts an
+      independent 6-character hand (4 active, 2 bench), plus 3 item cards. <b>One action per turn:</b> attack with a mat
+      character (dice-based damage, moves recharge after use) or play an item card. Lose three characters and the battle is over.</div>
+      <div class="banner">
+        <h2>Ready to draft?</h2>
+        <p>Player 1 drafts first, then passes the device to Player 2. Both decks are separate — you can both field the same character if the dice favor you.</p>
+        <button class="btn" id="startBtn">Begin Draft</button>
+      </div>
+    `;
+    document.getElementById("startBtn").onclick = newSetup;
+    return;
+  }
+  if(state.phase==="draft") return renderDraft();
+  if(state.phase==="over") return renderOver();
+  return renderBattle();
+}
+
+render();
+</script>
+</body>
+</html>
