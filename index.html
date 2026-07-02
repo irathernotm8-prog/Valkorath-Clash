@@ -46,8 +46,9 @@
   .sub{color:#c9bd9c; font-size:14px; margin-bottom:22px; max-width:700px; line-height:1.6;}
   .sub b{color:var(--gold-bright);}
 
-  .layout{display:grid; grid-template-columns:1fr 300px; gap:18px; align-items:start;}
-  @media (max-width:920px){ .layout{grid-template-columns:1fr;} }
+  .layout{display:grid; grid-template-columns:280px 1fr 300px; gap:18px; align-items:start;}
+  @media (max-width:1100px){ .layout{grid-template-columns:1fr 300px;} .left-col{grid-column:1 / -1; order:3;} }
+  @media (max-width:920px){ .layout{grid-template-columns:1fr;} .left-col{order:0;} }
 
   .panel{
     background:linear-gradient(180deg, var(--leather), var(--wood-2));
@@ -123,6 +124,7 @@
 
   /* SIDEBAR */
   .sidebar{position:sticky; top:14px;}
+  .left-col{position:sticky; top:14px;}
   .side-title{font-family:'Cinzel',serif; font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-bright); margin-bottom:10px;}
 
   /* dice visualization */
@@ -1201,6 +1203,10 @@ function renderBattle(){
     <h1>VALKORATH: CLASH</h1>
     <div class="sub">Local hot-seat — the full Valkorath cast. One attack AND one item card per turn, in either order.</div>
     <div class="layout">
+      <div class="left-col">
+        ${detailsBoxHtml()}
+        <div class="log">${state.log.map(l=>`<div>${l}</div>`).join("")}</div>
+      </div>
       <div>
         <div class="panel">
           <div class="row-label">
@@ -1216,8 +1222,6 @@ function renderBattle(){
           </div>
           ${matHtml(active, true)}
         </div>
-        ${detailsBoxHtml()}
-        <div class="log">${state.log.map(l=>`<div>${l}</div>`).join("")}</div>
       </div>
       <div class="panel sidebar">
         ${rollPanelHtml()}
